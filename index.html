@@ -1,309 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simulatie Game SignIn/SignUp</title>
-<!-- Google Fonts for modern typography -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
-<style>
-  /* Reset en basisstijl */
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    background-size: 400% 400%;
-    animation: gradientAnimation 15s ease infinite;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-    color: #fff;
-  }
-
-  @keyframes gradientAnimation {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-  }
-
-  /* Container met stijl en animatie */
-  .container {
-    background: rgba(0, 0, 0, 0.75);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    max-width: 400px;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-    animation: floatUp 2s ease-out;
-  }
-
-  @keyframes floatUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  /* Titel met extra style */
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
-    font-weight: 600;
-    text-align: center;
-    letter-spacing: 1px;
-  }
-
-  /* Sign in/up form velden */
-  input {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: none;
-    background-color: #222;
-    color: #eee;
-    font-size: 1rem;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  input:focus {
-    outline: none;
-    background-color: #333;
-    transform: scale(1.02);
-  }
-
-  /* Knoppenstijl */
-  button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 15px;
-    border-radius: 10px;
-    border: none;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  button:hover {
-    background-color: #4CAF50;
-    transform: translateY(-2px);
-  }
-
-  /* Sign-up en sign-in switcher */
-  #signup-area {
-    display: none;
-  }
-
-  /* Verander kleur voor donkere en lichte knoppen (bijvoorbeeld voor donker) */
-  .dark-btn {
-    background-color: #222;
-    color: #eee;
-  }
-  .dark-btn:hover {
-    background-color: #444;
-  }
-
-  /* De drie puntjes (menu) links/rechts */
-  .menu-points {
-    position: absolute;
-    top: 20px;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    cursor: pointer;
-    z-index: 10;
-  }
-
-  .menu-points.left {
-    left: 20px;
-    flex-direction: row;
-  }
-
-  .menu-points.right {
-    right: 20px;
-    flex-direction: row;
-  }
-
-  .dots {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 60px;
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    background-color: #fff;
-    border-radius: 50%;
-    margin: 4px 0;
-    transition: background-color 0.3s;
-  }
-
-  /* Sign in/out/other links */
-  .links {
-    margin-top: 15px;
-    text-align: center;
-  }
-
-  .links a {
-    color: #66fcf1;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin: 0 10px;
-    transition: color 0.3s;
-  }
-
-  .links a:hover {
-    color: #45a29e;
-  }
-
-  /* Footer */
-  footer {
-    margin-top: 25px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #aaa;
-  }
-  footer a {
-    color: #66fcf1;
-    text-decoration: none;
-    margin: 0 10px;
-  }
-  footer a:hover {
-    color: #45a29e;
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101225">
+  <title>Freddo Hosting — Accountpagina</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: grid; place-items: center;
+      padding: 24px; color: #f5f6ff;
+      font: 16px/1.6 system-ui, sans-serif;
+      background: radial-gradient(ellipse at 20% 15%, #37316d 0, transparent 45%),
+                  radial-gradient(ellipse at 85% 80%, #153b62 0, transparent 42%),
+                  #101225;
+    }
+    main {
+      width: min(100%, 600px); padding: 40px; text-align: center;
+      border: 1px solid #ffffff22; border-radius: 24px;
+      background: #ffffff0c; box-shadow: 0 24px 80px #0006;
+      animation: appear .7s ease-out both;
+    }
+    .badge { color: #b8b5ff; letter-spacing: .12em; text-transform: uppercase; font-size: .78rem; }
+    h1 { margin: 12px 0; font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1.1; }
+    p { color: #c7c9dc; }
+    a.button {
+      display: inline-block; margin-top: 18px; padding: 12px 20px;
+      border-radius: 12px; color: white; text-decoration: none; font-weight: 700;
+      background: linear-gradient(100deg, #7567ff, #4d9cff);
+      transition: transform .2s, filter .2s;
+    }
+    a.button:hover { transform: translateY(-2px); filter: brightness(1.12); }
+    .notice { margin-top: 24px; padding: 14px; border-radius: 12px; background: #ffffff0b; font-size: .9rem; }
+    @keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
 </head>
 <body>
-
-<!-- Menu Puntjes Links -->
-<div class="menu-points left" id="menuLeft">
-  <div class="dots">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-</div>
-
-<!-- Menu Puntjes Rechts -->
-<div class="menu-points right" id="menuRight">
-  <div class="dots">
-    <div class="dot"></div>
-    <div class="dot"></div>
-    <div class="dot"></div>
-  </div>
-</div>
-
-<!-- Main container -->
-<div class="container">
-
-  <h1>Simulatie Game Auth</h1>
-
-  <!-- Sign-in formulier -->
-  <div id="form-area">
-    <input type="text" id="username" placeholder="Naam" />
-    <input type="password" id="password" placeholder="Wachtwoord" />
-    <button onclick="signIn()">Inloggen</button>
-    <button onclick="showSignUp()">Aanmelden</button>
-  </div>
-
-  <!-- Sign-up formulier -->
-  <div id="signup-area">
-    <input type="text" id="signup-name" placeholder="Nieuwe naam" />
-    <input type="password" id="signup-pass" placeholder="Nieuw wachtwoord" />
-    <button onclick="signUp()">Account aanmaken</button>
-    <button onclick="showSignIn()">Terug</button>
-  </div>
-
-  <!-- Random generator knop -->
-  <div class="links">
-    <button onclick="generateRandom()">Genereer Naam & Wachtwoord</button>
-  </div>
-
-  <!-- Gegeneerde code display -->
-  <div id="generated"></div>
-
-  <!-- Discord community link -->
-  <footer>
-    <a href="https://discord.gg/wWkTbc7YVg" target="_blank">Join onze community</a>
-  </footer>
-
-</div>
-
-<!-- Scripts -->
-<script>
-  // Toggle between sign in en sign up
-  function showSignUp() {
-    document.getElementById('form-area').style.display='none';
-    document.getElementById('signup-area').style.display='block';
-  }
-  function showSignIn() {
-    document.getElementById('form-area').style.display='block';
-    document.getElementById('signup-area').style.display='none';
-  }
-
-  // Random naam en wachtwoord generator
-  function generateRandom() {
-    const names = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Gamer', 'Player'];
-    const passwords = ['pass123', 'qwerty', 'abc123', 'password', 'letmein', 'gaming'];
-    const randName = names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 1000);
-    const randPass = passwords[Math.floor(Math.random() * passwords.length)] + Math.floor(Math.random() * 999);
-    document.getElementById('generated').innerHTML = `
-      <strong>Naam:</strong> ${randName}<br>
-      <strong>Wachtwoord:</strong> ${randPass}
-    `;
-    document.getElementById('generated').style.display='block';
-  }
-
-  // Sign-up functie (voorbeeld)
-  function signUp() {
-    const name = document.getElementById('signup-name').value;
-    const pass = document.getElementById('signup-pass').value;
-    if(name && pass) {
-      alert('Account aangemaakt! Gebruik deze in Discord met !auth code.');
-      const authCode = Math.random().toString(36).substring(2,8).toUpperCase();
-      alert(`Je verificatie code: ${authCode}\nGebruik !auth ${authCode} in Discord.`);
-    } else {
-      alert('Vul alle velden in.');
-    }
-  }
-
-  // Sign-in functie (voorbeeld)
-  function signIn() {
-    const name = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
-    if(name && pass) {
-      alert('Ingelogd! Gebruik !auth in Discord met je code.');
-    } else {
-      alert('Vul alle velden in.');
-    }
-  }
-
-  // Kleine animatie voor de puntjes
-  document.querySelectorAll('.dot').forEach(dot => {
-    dot.animate([
-      { backgroundColor: '#fff' },
-      { backgroundColor: '#ccc' },
-      { backgroundColor: '#fff' }
-    ], {
-      duration: 2000,
-      iterations: Infinity,
-      direction: 'alternate'
-    });
-  });
-</script>
-
+  <main>
+    <div class="badge">Freddo Hosting</div>
+    <h1>Welkom</h1>
+    <p>Dit is de accountpagina. Gebruik uitsluitend officiële Discord-pagina’s voor Discord-aanmeldingen.</p>
+    <a class="button"
+       href="https://discord.com/oauth2/authorize?client_id=JOUW_APPLICATION_ID&amp;scope=identify"
+       rel="noopener noreferrer">
+      Officieel aanmelden via Discord
+    </a>
+    <div class="notice">
+      Deel nooit je wachtwoord, autorisatiecode of Discord-token met iemand.
+      Deze website vraagt daar niet om.
+    </div>
+  </main>
 </body>
 </html>
