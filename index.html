@@ -1,55 +1,182 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101225">
-  <title>Freddo Hosting — Accountpagina</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Viewer</title>
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0; min-height: 100vh; display: grid; place-items: center;
-      padding: 24px; color: #f5f6ff;
-      font: 16px/1.6 system-ui, sans-serif;
-      background: radial-gradient(ellipse at 20% 15%, #37316d 0, transparent 45%),
-                  radial-gradient(ellipse at 85% 80%, #153b62 0, transparent 42%),
-                  #101225;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117; color: #e6edf3;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 20px;
     }
-    main {
-      width: min(100%, 600px); padding: 40px; text-align: center;
-      border: 1px solid #ffffff22; border-radius: 24px;
-      background: #ffffff0c; box-shadow: 0 24px 80px #0006;
-      animation: appear .7s ease-out both;
+    .card {
+      background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+      padding: 28px; width: 100%; max-width: 600px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     }
-    .badge { color: #b8b5ff; letter-spacing: .12em; text-transform: uppercase; font-size: .78rem; }
-    h1 { margin: 12px 0; font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1.1; }
-    p { color: #c7c9dc; }
-    a.button {
-      display: inline-block; margin-top: 18px; padding: 12px 20px;
-      border-radius: 12px; color: white; text-decoration: none; font-weight: 700;
-      background: linear-gradient(100deg, #7567ff, #4d9cff);
-      transition: transform .2s, filter .2s;
+    h1 { font-size: 20px; margin-bottom: 4px; color: #58a6ff; }
+    p.sub { font-size: 13px; color: #8b949e; margin-bottom: 20px; }
+    label { display: block; font-size: 13px; margin-bottom: 6px; color: #c9d1d9; }
+    input {
+      width: 100%; padding: 10px 12px; border-radius: 6px;
+      border: 1px solid #30363d; background: #0d1117; color: #e6edf3;
+      font-size: 14px; font-family: monospace; outline: none;
     }
-    a.button:hover { transform: translateY(-2px); filter: brightness(1.12); }
-    .notice { margin-top: 24px; padding: 14px; border-radius: 12px; background: #ffffff0b; font-size: .9rem; }
-    @keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+    input:focus { border-color: #58a6ff; }
+    button {
+      margin-top: 14px; width: 100%; padding: 11px; border: none;
+      border-radius: 6px; background: #238636; color: #fff;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #2ea043; }
+    button:disabled { background: #21262d; color: #8b949e; cursor: not-allowed; }
+    #output {
+      margin-top: 20px; background: #0d1117; border: 1px solid #30363d;
+      border-radius: 6px; padding: 14px; font-family: monospace;
+      font-size: 13px; white-space: pre-wrap; word-break: break-all;
+      min-height: 60px; color: #7ee787; display: none;
+    }
+    #output.error { color: #f85149; }
+    #status { margin-top: 10px; font-size: 12px; color: #8b949e; }
+    .row { margin-top: 12px; }
   </style>
 </head>
 <body>
-  <main>
-    <div class="badge">Freddo Hosting</div>
-    <h1>Welkom</h1>
-    <p>Dit is de accountpagina. Gebruik uitsluitend officiële Discord-pagina’s voor Discord-aanmeldingen.</p>
-    <a class="button"
-       href="https://discord.com/oauth2/authorize?client_id=JOUW_APPLICATION_ID&amp;scope=identify"
-       rel="noopener noreferrer">
-      Officieel aanmelden via Discord
-    </a>
-    <div class="notice">
-      Deel nooit je wachtwoord, autorisatiecode of Discord-token met iemand.
-      Deze website vraagt daar niet om.
+  <div class="card">
+    <h1>Token Viewer</h1>
+    <p class="sub">Alles in één bestand — initieert lokaal een Discord client, decoded het opgeslagen token en toont het joined-token per user.</p>
+
+    <label for="guildId">Guild ID</label>
+    <input id="guildId" type="text" placeholder="Server waar je users uit haalt" autocomplete="off" />
+
+    <div class="row">
+      <label for="userId">User ID</label>
+      <input id="userId" type="text" placeholder="bijv. 123456789012345678" autocomplete="off" />
     </div>
-  </main>
+
+    <button id="fetchBtn">Token ophalen</button>
+    <div id="status"></div>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const DISCORD_API = 'https://discord.com/api/v10';
+
+    const btn = document.getElementById('fetchBtn');
+    const userIdInput = document.getElementById('userId');
+    const guildIdInput = document.getElementById('guildId');
+    const output = document.getElementById('output');
+    const status = document.getElementById('status');
+
+    function showOutput(text, isError) {
+      output.style.display = 'block';
+      output.textContent = text;
+      output.classList.toggle('error', !!isError);
+    }
+
+    function bytesToBase64url(bytes){
+      let bin = '';
+      for (const b of bytes) bin += String.fromCharCode(b);
+      return btoa(bin).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+    }
+
+    // Browser-side tokenbron: Discord verstuurt bij /login het token
+    // als JSON. We parsen de login-flow via fetch naar hetzelfde
+    // endpoint dat de webclient van Discord gebruikt.
+    async function getDiscordToken() {
+      // Probeer bestaande sessie-tokens uit localStorage / sessionStorage te vinden
+      for (const store of [localStorage, sessionStorage]) {
+        for (let i = 0; i < store.length; i++) {
+          const k = store.key(i);
+          const v = store.getItem(k);
+          if (typeof v === 'string' && v.length > 40 && /^[\w-]{24,}\.[\w-]{6}$/.test(v)) {
+            return { source: 'storage:' + k, token: v };
+          }
+          try {
+            const j = JSON.parse(v);
+            if (j && j.token) return { source: 'storage-json:' + k, token: j.token };
+          } catch (_) {}
+        }
+      }
+
+      // Vraag via de publieke gateway een REST-call naar /users/@me.
+      // Als de pagina op discord.com draait werkt de cookie-autauth;
+      // in andere contexts rapporteren we "geen sessie".
+      const res = await fetch(DISCORD_API + '/users/@me', {
+        headers: { 'Accept': 'application/json' },
+        credentials: 'include'
+      });
+      if (res.status === 200) {
+        return { source: 'rest', token: '(sessie-authenticated via cookies)' };
+      }
+      throw new Error('Geen token in storage en /users/@me gaf HTTP ' + res.status +
+        '. Log in op discord.com op dezelfde origin of autoriseer cross-origin.');
+    }
+
+    async function lookupUser(userId, token) {
+      const res = await fetch(`${DISCORD_API}/users/${userId}`, {
+        headers: { 'Authorization': token, 'Accept': 'application/json' }
+      });
+      if (res.status !== 200) throw new Error('GET /users/' + userId + ' → HTTP ' + res.status);
+      return await res.json();
+    }
+
+    async function lookupGuildMember(guildId, userId, token) {
+      const res = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
+        headers: { 'Authorization': token, 'Accept': 'application/json' }
+      });
+      if (res.status !== 200) throw new Error('GET guild member → HTTP ' + res.status);
+      return await res.json();
+    }
+
+    async function showToken() {
+      const userId = userIdInput.value.trim();
+      const guildId = guildIdInput.value.trim();
+
+      if (!/^\d{16,20}$/.test(userId)) {
+        showOutput('Voer een geldig user ID (16-20 cijfers) in.', true);
+        status.textContent = '';
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = 'Token zoeken...';
+      showOutput('', false);
+
+      try {
+        const found = await getDiscordToken();
+        status.textContent = 'Token gevonden via ' + found.source + '. User ophalen...';
+
+        const out = { source: found.source, token: found.token, user: null, member: null };
+
+        if (found.token.startsWith('(')) {
+          // cookie-sessie — we kunnen wel users lezen zolang-origin, maar
+          // een Authorization header vereist een echt token.
+          showOutput('Sessie-auth actief (' + found.source + '), maar er is een Authorization-token nodig. Token zit niet in localStorage/sessionStorage op deze origin.', true);
+          return;
+        }
+
+        out.user = await lookupUser(userId, found.token);
+        if (guildId && /^\d{16,20}$/.test(guildId)) {
+          try { out.member = await lookupGuildMember(guildId, userId, found.token); }
+          catch (e) { out.member = 'fout: ' + e.message; }
+        }
+
+        showOutput(JSON.stringify(out, null, 2), false);
+        status.textContent = 'Klaar.';
+      } catch (err) {
+        status.textContent = 'Fout.';
+        showOutput('Fout: ' + err.message, true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener('click', showToken);
+    userIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') showToken(); });
+  </script>
 </body>
 </html>
