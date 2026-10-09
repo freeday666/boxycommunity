@@ -2,181 +2,304 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Token Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maak met AI</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0d1117; color: #e6edf3;
-      display: flex; justify-content: center; align-items: center;
-      min-height: 100vh; padding: 20px;
+      margin: 0;
+      font: 14px system-ui, sans-serif;
+      color: #eef2ff;
+      background: #0b1020;
     }
-    .card {
-      background: #161b22; border: 1px solid #30363d; border-radius: 10px;
-      padding: 28px; width: 100%; max-width: 600px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+
+    header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      background: #11182b;
+      border-bottom: 1px solid #28334d;
     }
-    h1 { font-size: 20px; margin-bottom: 4px; color: #58a6ff; }
-    p.sub { font-size: 13px; color: #8b949e; margin-bottom: 20px; }
-    label { display: block; font-size: 13px; margin-bottom: 6px; color: #c9d1d9; }
-    input {
-      width: 100%; padding: 10px 12px; border-radius: 6px;
-      border: 1px solid #30363d; background: #0d1117; color: #e6edf3;
-      font-size: 14px; font-family: monospace; outline: none;
-    }
-    input:focus { border-color: #58a6ff; }
+
+    .logo { font-size: 18px; font-weight: 700; }
+    .logo span { color: #8b72ff; }
+
     button {
-      margin-top: 14px; width: 100%; padding: 11px; border: none;
-      border-radius: 6px; background: #238636; color: #fff;
-      font-size: 14px; font-weight: 600; cursor: pointer;
+      color: white;
+      background: #202a42;
+      border: 1px solid #34415e;
+      border-radius: 8px;
+      padding: 9px 12px;
+      cursor: pointer;
     }
-    button:hover { background: #2ea043; }
-    button:disabled { background: #21262d; color: #8b949e; cursor: not-allowed; }
-    #output {
-      margin-top: 20px; background: #0d1117; border: 1px solid #30363d;
-      border-radius: 6px; padding: 14px; font-family: monospace;
-      font-size: 13px; white-space: pre-wrap; word-break: break-all;
-      min-height: 60px; color: #7ee787; display: none;
+
+    button:hover { border-color: #8b72ff; }
+    .run { background: #7357ff; border-color: #7357ff; }
+
+    main {
+      height: calc(100vh - 60px);
+      display: grid;
+      grid-template-columns: 310px 1fr 1fr;
+      gap: 12px;
+      padding: 12px;
     }
-    #output.error { color: #f85149; }
-    #status { margin-top: 10px; font-size: 12px; color: #8b949e; }
-    .row { margin-top: 12px; }
+
+    .panel {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #28334d;
+      border-radius: 12px;
+      background: #11182b;
+    }
+
+    .title {
+      padding: 13px;
+      border-bottom: 1px solid #28334d;
+      font-weight: 700;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .bot { background: #1b2540; }
+    .user { background: #4937a8; margin-left: 22px; }
+
+    .chat-form {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid #28334d;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 10px;
+      color: white;
+      background: #0b1020;
+      border: 1px solid #34415e;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .editor-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #28334d;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      padding: 14px;
+      color: #dce6ff;
+      background: #0b1020;
+      border: 0;
+      outline: none;
+      font: 13px/1.6 monospace;
+      tab-size: 2;
+    }
+
+    iframe {
+      flex: 1;
+      width: 100%;
+      border: 0;
+      background: white;
+    }
+
+    @media (max-width: 850px) {
+      main {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+      .panel { height: 55vh; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Token Viewer</h1>
-    <p class="sub">Alles in één bestand — initieert lokaal een Discord client, decoded het opgeslagen token en toont het joined-token per user.</p>
+  <header>
+    <div class="logo">Maak<span>Studio</span></div>
+    <button id="download">Download HTML</button>
+  </header>
 
-    <label for="guildId">Guild ID</label>
-    <input id="guildId" type="text" placeholder="Server waar je users uit haalt" autocomplete="off" />
+  <main>
+    <section class="panel">
+      <div class="title">💬 Vertel wat je wilt maken</div>
+      <div id="messages">
+        <div class="message bot">
+          Hoi! Beschrijf een simpele website, bijvoorbeeld:
+          “Maak een paarse pagina met een grote titel en een knop.”
+        </div>
+      </div>
+      <form class="chat-form" id="chatForm">
+        <input id="prompt" placeholder="Wat wil je maken?" autocomplete="off">
+        <button class="run" type="submit">Maak</button>
+      </form>
+    </section>
 
-    <div class="row">
-      <label for="userId">User ID</label>
-      <input id="userId" type="text" placeholder="bijv. 123456789012345678" autocomplete="off" />
-    </div>
+    <section class="panel">
+      <div class="editor-top">
+        <strong>index.html</strong>
+        <button class="run" id="run">▶ Preview</button>
+      </div>
+      <textarea id="code" spellcheck="false"></textarea>
+    </section>
 
-    <button id="fetchBtn">Token ophalen</button>
-    <div id="status"></div>
-    <pre id="output"></pre>
-  </div>
+    <section class="panel">
+      <div class="title">👀 Voorbeeld</div>
+      <iframe id="preview" title="Websitevoorbeeld" sandbox="allow-scripts"></iframe>
+    </section>
+  </main>
 
   <script>
-    const DISCORD_API = 'https://discord.com/api/v10';
+    const starterCode = `<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mijn website</title>
+</head>
+<body>
+  <h1>Mijn eerste website</h1>
+  <p>Vertel links wat je wilt maken.</p>
+  <button onclick="alert('Hallo!')">Klik op mij</button>
+</body>
+</html>`;
 
-    const btn = document.getElementById('fetchBtn');
-    const userIdInput = document.getElementById('userId');
-    const guildIdInput = document.getElementById('guildId');
-    const output = document.getElementById('output');
-    const status = document.getElementById('status');
+    const code = document.getElementById("code");
+    const preview = document.getElementById("preview");
+    const messages = document.getElementById("messages");
 
-    function showOutput(text, isError) {
-      output.style.display = 'block';
-      output.textContent = text;
-      output.classList.toggle('error', !!isError);
+    code.value = starterCode;
+    updatePreview();
+
+    function updatePreview() {
+      preview.srcdoc = code.value;
     }
 
-    function bytesToBase64url(bytes){
-      let bin = '';
-      for (const b of bytes) bin += String.fromCharCode(b);
-      return btoa(bin).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+    function addMessage(text, type) {
+      const message = document.createElement("div");
+      message.className = "message " + type;
+      message.textContent = text;
+      messages.appendChild(message);
+      messages.scrollTop = messages.scrollHeight;
     }
 
-    // Browser-side tokenbron: Discord verstuurt bij /login het token
-    // als JSON. We parsen de login-flow via fetch naar hetzelfde
-    // endpoint dat de webclient van Discord gebruikt.
-    async function getDiscordToken() {
-      // Probeer bestaande sessie-tokens uit localStorage / sessionStorage te vinden
-      for (const store of [localStorage, sessionStorage]) {
-        for (let i = 0; i < store.length; i++) {
-          const k = store.key(i);
-          const v = store.getItem(k);
-          if (typeof v === 'string' && v.length > 40 && /^[\w-]{24,}\.[\w-]{6}$/.test(v)) {
-            return { source: 'storage:' + k, token: v };
-          }
-          try {
-            const j = JSON.parse(v);
-            if (j && j.token) return { source: 'storage-json:' + k, token: j.token };
-          } catch (_) {}
-        }
-      }
+    function makeWebsite(request) {
+      const lower = request.toLowerCase();
 
-      // Vraag via de publieke gateway een REST-call naar /users/@me.
-      // Als de pagina op discord.com draait werkt de cookie-autauth;
-      // in andere contexts rapporteren we "geen sessie".
-      const res = await fetch(DISCORD_API + '/users/@me', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (res.status === 200) {
-        return { source: 'rest', token: '(sessie-authenticated via cookies)' };
-      }
-      throw new Error('Geen token in storage en /users/@me gaf HTTP ' + res.status +
-        '. Log in op discord.com op dezelfde origin of autoriseer cross-origin.');
+      let color = "#7357ff";
+      if (lower.includes("blauw")) color = "#2878ff";
+      if (lower.includes("groen")) color = "#16a36a";
+      if (lower.includes("rood")) color = "#e34b5f";
+      if (lower.includes("zwart")) color = "#222222";
+      if (lower.includes("oranje")) color = "#ed8b24";
+
+      let title = "Welkom op mijn website";
+      const titleMatch = request.match(/(?:over|voor|met de naam)\s+(.+)/i);
+      if (titleMatch) title = titleMatch[1].replace(/[.!?]+$/, "");
+
+      return `<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: system-ui, sans-serif;
+      text-align: center;
+      color: #20243a;
+      background: linear-gradient(135deg, ${color}22, white);
+    }
+    .card {
+      max-width: 650px;
+      padding: 48px 32px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px #17204420;
+    }
+    h1 { font-size: clamp(2rem, 7vw, 4rem); margin: 0 0 16px; }
+    p { color: #60677c; font-size: 1.1rem; }
+    button {
+      margin-top: 16px;
+      padding: 13px 22px;
+      border: 0;
+      border-radius: 10px;
+      color: white;
+      background: ${color};
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>${escapeHtml(title)}</h1>
+    <p>Een website gemaakt met MaakStudio.</p>
+    <button onclick="alert('Bedankt voor je bezoek!')">Klik hier</button>
+  </main>
+</body>
+</html>`;
     }
 
-    async function lookupUser(userId, token) {
-      const res = await fetch(`${DISCORD_API}/users/${userId}`, {
-        headers: { 'Authorization': token, 'Accept': 'application/json' }
-      });
-      if (res.status !== 200) throw new Error('GET /users/' + userId + ' → HTTP ' + res.status);
-      return await res.json();
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#039;"
+      })[character]);
     }
 
-    async function lookupGuildMember(guildId, userId, token) {
-      const res = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
-        headers: { 'Authorization': token, 'Accept': 'application/json' }
-      });
-      if (res.status !== 200) throw new Error('GET guild member → HTTP ' + res.status);
-      return await res.json();
-    }
+    document.getElementById("chatForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const input = document.getElementById("prompt");
+      const request = input.value.trim();
+      if (!request) return;
 
-    async function showToken() {
-      const userId = userIdInput.value.trim();
-      const guildId = guildIdInput.value.trim();
+      addMessage(request, "user");
+      code.value = makeWebsite(request);
+      updatePreview();
+      addMessage("Ik heb een voorbeeldwebsite gemaakt. Je kunt de code aanpassen in de editor!", "bot");
+      input.value = "";
+    });
 
-      if (!/^\d{16,20}$/.test(userId)) {
-        showOutput('Voer een geldig user ID (16-20 cijfers) in.', true);
-        status.textContent = '';
-        return;
-      }
+    document.getElementById("run").addEventListener("click", updatePreview);
 
-      btn.disabled = true;
-      status.textContent = 'Token zoeken...';
-      showOutput('', false);
+    code.addEventListener("input", updatePreview);
 
-      try {
-        const found = await getDiscordToken();
-        status.textContent = 'Token gevonden via ' + found.source + '. User ophalen...';
-
-        const out = { source: found.source, token: found.token, user: null, member: null };
-
-        if (found.token.startsWith('(')) {
-          // cookie-sessie — we kunnen wel users lezen zolang-origin, maar
-          // een Authorization header vereist een echt token.
-          showOutput('Sessie-auth actief (' + found.source + '), maar er is een Authorization-token nodig. Token zit niet in localStorage/sessionStorage op deze origin.', true);
-          return;
-        }
-
-        out.user = await lookupUser(userId, found.token);
-        if (guildId && /^\d{16,20}$/.test(guildId)) {
-          try { out.member = await lookupGuildMember(guildId, userId, found.token); }
-          catch (e) { out.member = 'fout: ' + e.message; }
-        }
-
-        showOutput(JSON.stringify(out, null, 2), false);
-        status.textContent = 'Klaar.';
-      } catch (err) {
-        status.textContent = 'Fout.';
-        showOutput('Fout: ' + err.message, true);
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    btn.addEventListener('click', showToken);
-    userIdInput.addEventListener('keydown', e => { if (e.key === 'Enter') showToken(); });
+    document.getElementById("download").addEventListener("click", () => {
+      const file = new Blob([code.value], { type: "text/html" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(file);
+      link.download = "index.html";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
   </script>
 </body>
 </html>
