@@ -1,305 +1,1018 @@
+html
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Maak met AI</title>
-  <style>
-    * { box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Oranjestad Roleplay 3D - Roblox Style</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+        
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
 
-    body {
-      margin: 0;
-      font: 14px system-ui, sans-serif;
-      color: #eef2ff;
-      background: #0b1020;
-    }
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Nunito', sans-serif;
+            background-color: #0b0f19;
+            color: #fff;
+        }
 
-    header {
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 18px;
-      background: #11182b;
-      border-bottom: 1px solid #28334d;
-    }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
 
-    .logo { font-size: 18px; font-weight: 700; }
-    .logo span { color: #8b72ff; }
+        .roblox-font {
+            font-family: 'Fredoka One', cursive, sans-serif;
+        }
 
-    button {
-      color: white;
-      background: #202a42;
-      border: 1px solid #34415e;
-      border-radius: 8px;
-      padding: 9px 12px;
-      cursor: pointer;
-    }
+        /* Glassmorphism Styling */
+        .roblox-card {
+            background: rgba(18, 24, 40, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-    button:hover { border-color: #8b72ff; }
-    .run { background: #7357ff; border-color: #7357ff; }
+        .roblox-btn {
+            background: linear-gradient(180deg, #00adff 0%, #0077ff 100%);
+            border-bottom: 4px solid #0051b3;
+            transition: all 0.1s ease;
+        }
 
-    main {
-      height: calc(100vh - 60px);
-      display: grid;
-      grid-template-columns: 310px 1fr 1fr;
-      gap: 12px;
-      padding: 12px;
-    }
+        .roblox-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
 
-    .panel {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border: 1px solid #28334d;
-      border-radius: 12px;
-      background: #11182b;
-    }
+        .roblox-btn-success {
+            background: linear-gradient(180deg, #00e676 0%, #00a843 100%);
+            border-bottom: 4px solid #00702c;
+        }
 
-    .title {
-      padding: 13px;
-      border-bottom: 1px solid #28334d;
-      font-weight: 700;
-    }
+        .roblox-btn-warning {
+            background: linear-gradient(180deg, #ff9100 0%, #d86800 100%);
+            border-bottom: 4px solid #9e4300;
+        }
 
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-    }
+        /* Interactive Steering Wheel Visual styling */
+        #steering-wheel-container {
+            touch-action: none;
+        }
+        
+        #steering-wheel {
+            transition: transform 0.05s linear;
+            transform-origin: center center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        }
 
-    .message {
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
+        /* Pulse animation for waypoints indicator */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
 
-    .bot { background: #1b2540; }
-    .user { background: #4937a8; margin-left: 22px; }
-
-    .chat-form {
-      display: flex;
-      gap: 8px;
-      padding: 10px;
-      border-top: 1px solid #28334d;
-    }
-
-    input {
-      min-width: 0;
-      flex: 1;
-      padding: 10px;
-      color: white;
-      background: #0b1020;
-      border: 1px solid #34415e;
-      border-radius: 8px;
-      outline: none;
-    }
-
-    .editor-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px;
-      border-bottom: 1px solid #28334d;
-    }
-
-    textarea {
-      flex: 1;
-      width: 100%;
-      resize: none;
-      padding: 14px;
-      color: #dce6ff;
-      background: #0b1020;
-      border: 0;
-      outline: none;
-      font: 13px/1.6 monospace;
-      tab-size: 2;
-    }
-
-    iframe {
-      flex: 1;
-      width: 100%;
-      border: 0;
-      background: white;
-    }
-
-    @media (max-width: 850px) {
-      main {
-        height: auto;
-        grid-template-columns: 1fr;
-      }
-      .panel { height: 55vh; }
-    }
-  </style>
+        .pulse-ui {
+            animation: pulse-ring 1.5s infinite ease-in-out;
+        }
+    </style>
 </head>
-<body>
-  <header>
-    <div class="logo">Maak<span>Studio</span></div>
-    <button id="download">Download HTML</button>
-  </header>
+<body class="select-none overflow-hidden">
 
-  <main>
-    <section class="panel">
-      <div class="title">💬 Vertel wat je wilt maken</div>
-      <div id="messages">
-        <div class="message bot">
-          Hoi! Beschrijf een simpele website, bijvoorbeeld:
-          “Maak een paarse pagina met een grote titel en een knop.”
+    <!-- 3D Canvas -->
+    <div id="canvas-container" class="w-full h-full absolute inset-0 z-0"></div>
+
+    <!-- MAIN UI OVERLAY -->
+    <div id="ui-layer" class="relative z-10 w-full h-full pointer-events-none flex flex-col justify-between p-3 md:p-6">
+        
+        <!-- TOP BAR: Money, Job & Menus -->
+        <div class="flex justify-between items-start w-full gap-2 sm:gap-4">
+            
+            <!-- Player Stats -->
+            <div class="flex flex-col gap-1.5 pointer-events-auto">
+                <div class="roblox-card rounded-2xl p-2.5 sm:p-3 flex items-center gap-3 border-l-4 border-emerald-400">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider">Inwoner Oranjestad</div>
+                        <div id="player-cash" class="text-xl sm:text-2xl roblox-font text-emerald-400 flex items-center gap-1">
+                            <span class="text-emerald-500">€</span><span id="cash-val">1,250</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Job Badge -->
+                <div class="roblox-card rounded-xl px-2.5 py-1 flex items-center gap-2 self-start">
+                    <span class="text-[10px] sm:text-xs text-slate-400">Beroep:</span>
+                    <span id="current-job-badge" class="text-xs sm:text-sm font-bold text-sky-400 roblox-font flex items-center gap-1">
+                        <i class="fa-solid fa-user"></i> Burger
+                    </span>
+                </div>
+            </div>
+
+            <!-- Top Center: Job Notifications -->
+            <div id="notification-banner" class="hidden roblox-card rounded-2xl px-4 py-2 sm:px-6 sm:py-3 text-center border-amber-400 border-2 shadow-2xl pulse-ui max-w-sm sm:max-w-md mx-auto pointer-events-auto">
+                <div id="notif-title" class="roblox-font text-sm sm:text-lg text-amber-400 uppercase tracking-wide">Nieuwe Opdracht!</div>
+                <div id="notif-body" class="text-xs sm:text-sm text-slate-200">Rijd naar de marker om te starten.</div>
+            </div>
+
+            <!-- Top Right Action Buttons -->
+            <div class="flex items-center gap-2 pointer-events-auto">
+                <button onclick="toggleMenu('job-menu')" class="roblox-card hover:bg-slate-800 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl flex items-center gap-2 border border-slate-700 transition">
+                    <i class="fa-solid fa-briefcase text-sky-400"></i>
+                    <span class="hidden sm:inline">Banen</span>
+                </button>
+                <button onclick="toggleMenu('garage-menu')" class="roblox-card hover:bg-slate-800 text-white font-bold py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl flex items-center gap-2 border border-slate-700 transition">
+                    <i class="fa-solid fa-car text-amber-400"></i>
+                    <span class="hidden sm:inline">Garage</span>
+                </button>
+                <button onclick="changeCamera()" class="roblox-card hover:bg-slate-800 text-white font-bold p-2 sm:p-2.5 rounded-xl border border-slate-700 transition" title="Wissel Camera (C)">
+                    <i class="fa-solid fa-video text-purple-400 text-lg"></i>
+                </button>
+                <button onclick="toggleDayNight()" class="roblox-card hover:bg-slate-800 text-white font-bold p-2 sm:p-2.5 rounded-xl border border-slate-700 transition" title="Dag / Nacht">
+                    <i id="day-night-icon" class="fa-solid fa-moon text-indigo-400 text-lg"></i>
+                </button>
+            </div>
         </div>
-      </div>
-      <form class="chat-form" id="chatForm">
-        <input id="prompt" placeholder="Wat wil je maken?" autocomplete="off">
-        <button class="run" type="submit">Maak</button>
-      </form>
-    </section>
 
-    <section class="panel">
-      <div class="editor-top">
-        <strong>index.html</strong>
-        <button class="run" id="run">▶ Preview</button>
-      </div>
-      <textarea id="code" spellcheck="false"></textarea>
-    </section>
+        <!-- JOB SELECTOR MENU -->
+        <div id="job-menu" class="hidden absolute inset-0 m-auto w-11/12 max-w-2xl h-fit roblox-card rounded-3xl p-6 pointer-events-auto z-50">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700/60 pb-4">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-id-card text-sky-400 text-2xl"></i>
+                    <h2 class="text-2xl roblox-font tracking-wide">Kies je Beroep</h2>
+                </div>
+                <button onclick="toggleMenu('job-menu')" class="text-slate-400 hover:text-white text-xl p-2"><i class="fa-solid fa-xmark"></i></button>
+            </div>
 
-    <section class="panel">
-      <div class="title">👀 Voorbeeld</div>
-      <iframe id="preview" title="Websitevoorbeeld" sandbox="allow-scripts"></iframe>
-    </section>
-  </main>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- PostNL Job -->
+                <div onclick="selectJob('postnl')" class="roblox-card hover:border-orange-500 p-4 rounded-2xl cursor-pointer transition flex items-start gap-4 border border-slate-700">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-orange-400 roblox-font">PostNL Bezorger</h3>
+                        <p class="text-xs text-slate-300 mt-1">Haal pakketten op bij het depot en bezorg ze aan huis voor €150 per pakket.</p>
+                    </div>
+                </div>
 
-  <script>
-    const starterCode = `<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mijn website</title>
-</head>
-<body>
-  <h1>Mijn eerste website</h1>
-  <p>Vertel links wat je wilt maken.</p>
-  <button onclick="alert('Hallo!')">Klik op mij</button>
-</body>
-</html>`;
+                <!-- Police Job -->
+                <div onclick="selectJob('police')" class="roblox-card hover:border-blue-500 p-4 rounded-2xl cursor-pointer transition flex items-start gap-4 border border-slate-700">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-blue-400 roblox-font">Politie Agent</h3>
+                        <p class="text-xs text-slate-300 mt-1">Patrouilleer in de snelle BMW M5 Politie en reageer op noodoproepen.</p>
+                    </div>
+                </div>
 
-    const code = document.getElementById("code");
-    const preview = document.getElementById("preview");
-    const messages = document.getElementById("messages");
+                <!-- Taxi Driver Job -->
+                <div onclick="selectJob('taxi')" class="roblox-card hover:border-yellow-500 p-4 rounded-2xl cursor-pointer transition flex items-start gap-4 border border-slate-700">
+                    <div class="w-12 h-12 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-taxi"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-yellow-400 roblox-font">Taxi Chauffeur</h3>
+                        <p class="text-xs text-slate-300 mt-1">Vervoer bewoners door Oranjestad naar hun bestemming.</p>
+                    </div>
+                </div>
 
-    code.value = starterCode;
-    updatePreview();
+                <!-- Civilian Job -->
+                <div onclick="selectJob('civilian')" class="roblox-card hover:border-emerald-500 p-4 rounded-2xl cursor-pointer transition flex items-start gap-4 border border-slate-700">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-emerald-400 roblox-font">Vrije Inwoner</h3>
+                        <p class="text-xs text-slate-300 mt-1">Rijd vrij rond, verken het eiland en koop luxe BMW voertuigen.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    function updatePreview() {
-      preview.srcdoc = code.value;
-    }
+        <!-- GARAGE / VEHICLE MENU -->
+        <div id="garage-menu" class="hidden absolute inset-0 m-auto w-11/12 max-w-3xl h-fit max-h-[85vh] roblox-card rounded-3xl p-6 pointer-events-auto z-50 flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700/60 pb-3">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-warehouse text-amber-400 text-2xl"></i>
+                    <h2 class="text-2xl roblox-font tracking-wide">BMW Garage & Spawner</h2>
+                </div>
+                <button onclick="toggleMenu('garage-menu')" class="text-slate-400 hover:text-white text-xl p-2"><i class="fa-solid fa-xmark"></i></button>
+            </div>
 
-    function addMessage(text, type) {
-      const message = document.createElement("div");
-      message.className = "message " + type;
-      message.textContent = text;
-      messages.appendChild(message);
-      messages.scrollTop = messages.scrollHeight;
-    }
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-y-auto p-1">
+                <!-- BMW M5 Sedan -->
+                <div class="roblox-card p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <div class="h-28 bg-slate-800/80 rounded-xl flex items-center justify-center text-slate-500 mb-3 text-4xl">
+                            <i class="fa-solid fa-car-side text-sky-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white roblox-font">BMW M5 Sedan</h3>
+                        <p class="text-xs text-slate-400 mb-2">Rechtsgestuurd (RHD) met hoge topsnelheid.</p>
+                        <div class="text-sm font-bold text-emerald-400 mb-3">Gratis / Standaard</div>
+                    </div>
+                    <button onclick="spawnVehicle('bmw_m5')" class="w-full py-2.5 rounded-xl roblox-btn text-white font-bold roblox-font">
+                        <i class="fa-solid fa-key mr-1"></i> Spawnen
+                    </button>
+                </div>
 
-    function makeWebsite(request) {
-      const lower = request.toLowerCase();
+                <!-- BMW M3 Coupe -->
+                <div class="roblox-card p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <div class="h-28 bg-slate-800/80 rounded-xl flex items-center justify-center text-slate-500 mb-3 text-4xl">
+                            <i class="fa-solid fa-car text-indigo-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-white roblox-font">BMW M3 Sports</h3>
+                        <p class="text-xs text-slate-400 mb-2">Lichtgewicht sportcoupe voor Oranjestad.</p>
+                        <div class="text-sm font-bold text-amber-400 mb-3">€2,500</div>
+                    </div>
+                    <button onclick="buyOrSpawn('bmw_m3', 2500)" class="w-full py-2.5 rounded-xl roblox-btn-warning text-white font-bold roblox-font">
+                        <i class="fa-solid fa-cart-shopping mr-1"></i> Koop / Spawn
+                    </button>
+                </div>
 
-      let color = "#7357ff";
-      if (lower.includes("blauw")) color = "#2878ff";
-      if (lower.includes("groen")) color = "#16a36a";
-      if (lower.includes("rood")) color = "#e34b5f";
-      if (lower.includes("zwart")) color = "#222222";
-      if (lower.includes("oranje")) color = "#ed8b24";
+                <!-- PostNL Delivery Van -->
+                <div class="roblox-card p-4 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <div>
+                        <div class="h-28 bg-slate-800/80 rounded-xl flex items-center justify-center text-slate-500 mb-3 text-4xl">
+                            <i class="fa-solid fa-truck-ram text-orange-400"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-orange-400 roblox-font">PostNL Bezorgbus</h3>
+                        <p class="text-xs text-slate-400 mb-2">Grote laadruimte voor pakketbezorging.</p>
+                        <div class="text-sm font-bold text-sky-400 mb-3">PostNL Beroep</div>
+                    </div>
+                    <button onclick="spawnVehicle('postnl_bus')" class="w-full py-2.5 rounded-xl roblox-btn text-white font-bold roblox-font">
+                        <i class="fa-solid fa-truck-fast mr-1"></i> Spawnen
+                    </button>
+                </div>
+            </div>
+        </div>
 
-      let title = "Welkom op mijn website";
-      const titleMatch = request.match(/(?:over|voor|met de naam)\s+(.+)/i);
-      if (titleMatch) title = titleMatch[1].replace(/[.!?]+$/, "");
+        <!-- CENTER ACTION PROMPT -->
+        <div id="action-prompt" class="hidden roblox-card rounded-2xl px-6 py-3 border-2 border-emerald-400 text-center pointer-events-auto animate-bounce self-center my-auto">
+            <span class="text-emerald-400 font-bold roblox-font text-base sm:text-lg">
+                <button onclick="handleJobCompletion()" class="bg-emerald-500 text-slate-900 px-3 py-1 rounded-lg mr-2 font-black shadow-lg">E / KLIK</button> 
+                <span id="action-text">Voer actie uit</span>
+            </span>
+        </div>
 
-      return `<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(title)}</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      font-family: system-ui, sans-serif;
-      text-align: center;
-      color: #20243a;
-      background: linear-gradient(135deg, ${color}22, white);
-    }
-    .card {
-      max-width: 650px;
-      padding: 48px 32px;
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 20px 60px #17204420;
-    }
-    h1 { font-size: clamp(2rem, 7vw, 4rem); margin: 0 0 16px; }
-    p { color: #60677c; font-size: 1.1rem; }
-    button {
-      margin-top: 16px;
-      padding: 13px 22px;
-      border: 0;
-      border-radius: 10px;
-      color: white;
-      background: ${color};
-      font-size: 1rem;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <main class="card">
-    <h1>${escapeHtml(title)}</h1>
-    <p>Een website gemaakt met MaakStudio.</p>
-    <button onclick="alert('Bedankt voor je bezoek!')">Klik hier</button>
-  </main>
-</body>
-</html>`;
-    }
+        <!-- BOTTOM CONTROLS & HUD -->
+        <div class="flex justify-between items-end w-full gap-2 relative pointer-events-none">
+            
+            <!-- LINKERKANT: PEDALEN (Gas & Rem) -->
+            <div class="pointer-events-auto flex gap-3 items-end mb-2">
+                <!-- REM / ACHTERUIT PEDAAL -->
+                <button id="btn-brake" class="w-16 h-28 sm:w-20 sm:h-32 bg-gradient-to-b from-rose-500 to-rose-700 border-b-4 border-rose-900 rounded-2xl flex flex-col items-center justify-center text-white shadow-2xl active:translate-y-1 transition active:border-b-0">
+                    <i class="fa-solid fa-backward text-xl sm:text-2xl mb-1"></i>
+                    <span class="roblox-font text-xs uppercase tracking-wider">REM</span>
+                </button>
 
-    function escapeHtml(text) {
-      return text.replace(/[&<>"']/g, character => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;",
-        '"': "&quot;", "'": "&#039;"
-      })[character]);
-    }
+                <!-- GAS PEDAAL -->
+                <button id="btn-gas" class="w-18 h-32 sm:w-22 sm:h-38 bg-gradient-to-b from-emerald-400 to-emerald-600 border-b-4 border-emerald-800 rounded-2xl flex flex-col items-center justify-center text-white shadow-2xl active:translate-y-1 transition active:border-b-0">
+                    <i class="fa-solid fa-gas-pump text-2xl sm:text-3xl mb-1"></i>
+                    <span class="roblox-font text-sm uppercase tracking-wider">GAS</span>
+                </button>
+            </div>
 
-    document.getElementById("chatForm").addEventListener("submit", event => {
-      event.preventDefault();
-      const input = document.getElementById("prompt");
-      const request = input.value.trim();
-      if (!request) return;
+            <!-- MIDDEN: SPEEDOMETER & MINIMAP -->
+            <div class="pointer-events-auto flex items-end gap-2 sm:gap-3 mb-2">
+                <!-- Speedometer -->
+                <div class="roblox-card rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-center w-20 h-20 sm:w-24 sm:h-24 border border-slate-700">
+                    <div id="speed-val" class="text-2xl sm:text-3xl roblox-font text-white">0</div>
+                    <div class="text-[9px] sm:text-[10px] text-slate-400 font-bold tracking-widest uppercase">KM/U</div>
+                    <div class="w-full bg-slate-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div id="speed-bar" class="bg-gradient-to-r from-sky-400 to-amber-400 h-full w-0 transition-all duration-75"></div>
+                    </div>
+                </div>
 
-      addMessage(request, "user");
-      code.value = makeWebsite(request);
-      updatePreview();
-      addMessage("Ik heb een voorbeeldwebsite gemaakt. Je kunt de code aanpassen in de editor!", "bot");
-      input.value = "";
-    });
+                <!-- MiniMap Canvas -->
+                <div class="roblox-card rounded-2xl p-1 w-24 h-24 sm:w-28 sm:h-28 relative overflow-hidden border-2 border-slate-700">
+                    <canvas id="minimap-canvas" class="w-full h-full rounded-xl"></canvas>
+                    <div class="absolute inset-0 m-auto w-2.5 h-2.5 bg-amber-400 border-2 border-white rounded-full shadow-md"></div>
+                </div>
+            </div>
 
-    document.getElementById("run").addEventListener("click", updatePreview);
+            <!-- RECHTS: INTERACTIEF STUURWIEL -->
+            <div class="pointer-events-auto flex items-end justify-end mb-1">
+                <div id="steering-wheel-container" class="relative w-36 h-36 sm:w-48 sm:h-48 flex items-center justify-center">
+                    <!-- Dynamic Rotating Wheel -->
+                    <div id="steering-wheel" class="w-full h-full rounded-full border-8 border-slate-800 bg-slate-900/90 relative flex items-center justify-center">
+                        <!-- Outer Grip -->
+                        <div class="absolute inset-1 rounded-full border-4 border-slate-700"></div>
+                        <!-- Center Hub -->
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-slate-800 border-2 border-sky-400 flex items-center justify-center text-sky-400 text-lg sm:text-2xl font-bold shadow-inner">
+                            <i class="fa-solid fa-car"></i>
+                        </div>
+                        <!-- Spokes -->
+                        <div class="absolute w-full h-3 bg-slate-700 rounded-full"></div>
+                        <div class="absolute h-full w-3 bg-slate-700 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
 
-    code.addEventListener("input", updatePreview);
+        </div>
+    </div>
 
-    document.getElementById("download").addEventListener("click", () => {
-      const file = new Blob([code.value], { type: "text/html" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(file);
-      link.download = "index.html";
-      link.click();
-      URL.revokeObjectURL(link.href);
-    });
-  </script>
+    <!-- MAIN GAME SCRIPT -->
+    <script>
+        // --- GAME STATE ---
+        const gameState = {
+            cash: 1250,
+            job: 'civilian',
+            ownedCars: ['bmw_m5'],
+            currentVehicle: null,
+            dayNight: true,
+            activeJobTarget: null,
+            cameraMode: 0 // 0 = 3rd Person, 1 = RHD Driver Cam, 2 = Top Down
+        };
+
+        // Inputs State
+        const controls = {
+            gas: false,
+            brake: false,
+            steeringAngle: 0, // -1 (vol links) tot +1 (vol rechts)
+            action: false
+        };
+
+        // --- THREE.JS SETUP ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        scene.fog = new THREE.FogExp2(0x87ceeb, 0.0035);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 0.9);
+        sunLight.position.set(100, 150, 50);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        const d = 120;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        scene.add(sunLight);
+
+        // --- AUDIO ENGINE ---
+        let audioCtx, engineOsc, engineGain;
+        function initAudio() {
+            if (audioCtx) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                engineOsc = audioCtx.createOscillator();
+                engineGain = audioCtx.createGain();
+                engineOsc.type = 'sawtooth';
+                engineOsc.frequency.setValueAtTime(40, audioCtx.currentTime);
+                engineGain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                engineOsc.connect(engineGain);
+                engineGain.connect(audioCtx.destination);
+                engineOsc.start();
+            } catch (e) {}
+        }
+
+        function updateAudioSound(speedRatio) {
+            if (!audioCtx || !engineOsc) return;
+            const targetFreq = 40 + (speedRatio * 190);
+            engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.1);
+        }
+
+        function playChimeSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
+            g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // --- MAP GENERATION ---
+        const mapSize = 400;
+        const buildings = [];
+
+        // Ground
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(mapSize, mapSize),
+            new THREE.MeshStandardMaterial({ color: 0x3d8c40, roughness: 0.9 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Wegen Generator
+        function createRoad(x, z, width, length, isHorizontal) {
+            const road = new THREE.Mesh(
+                new THREE.PlaneGeometry(isHorizontal ? length : width, isHorizontal ? width : length),
+                new THREE.MeshStandardMaterial({ color: 0x22252a, roughness: 0.8 })
+            );
+            road.rotation.x = -Math.PI / 2;
+            road.position.set(x, 0.02, z);
+            road.receiveShadow = true;
+            scene.add(road);
+
+            // Belijning
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const stripeCount = Math.floor((isHorizontal ? length : width) / 12);
+            for (let i = 0; i < stripeCount; i++) {
+                const stripe = new THREE.Mesh(
+                    new THREE.PlaneGeometry(isHorizontal ? 4 : 0.6, isHorizontal ? 0.6 : 4),
+                    lineMat
+                );
+                stripe.rotation.x = -Math.PI / 2;
+                const offset = (i - stripeCount / 2) * 12;
+                stripe.position.set(isHorizontal ? x + offset : x, 0.03, isHorizontal ? z : z + offset);
+                scene.add(stripe);
+            }
+        }
+
+        createRoad(0, 0, 18, mapSize, true);
+        createRoad(0, 0, 18, mapSize, false);
+        createRoad(-80, 0, 14, mapSize * 0.7, false);
+        createRoad(80, 0, 14, mapSize * 0.7, false);
+        createRoad(0, -90, 14, mapSize * 0.7, true);
+        createRoad(0, 90, 14, mapSize * 0.7, true);
+
+        // Gebouwen
+        function createBuilding(x, z, w, h, d, color, label, type) {
+            const group = new THREE.Group();
+            group.position.set(x, 0, z);
+
+            const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.5 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+            body.position.y = h / 2;
+            body.castShadow = true;
+            body.receiveShadow = true;
+            group.add(body);
+
+            // Dak
+            const roof = new THREE.Mesh(
+                new THREE.ConeGeometry(Math.max(w, d) * 0.7, 5, 4),
+                new THREE.MeshStandardMaterial({ color: 0x8b261b })
+            );
+            roof.position.y = h + 2.5;
+            roof.rotation.y = Math.PI / 4;
+            group.add(roof);
+
+            scene.add(group);
+            buildings.push({ x, z, w: w + 4, d: d + 4 });
+
+            if (type) {
+                const marker = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0, 2, 4, 4),
+                    new THREE.MeshBasicMaterial({ color: color, wireframe: true })
+                );
+                marker.position.set(x, h + 8, z);
+                marker.rotation.x = Math.PI;
+                scene.add(marker);
+            }
+        }
+
+        // Hubs
+        createBuilding(-40, -40, 24, 14, 20, 0xff6600, "PostNL Sorteercentrum", "postnl_hub");
+        createBuilding(40, -40, 28, 16, 22, 0x1e3a8a, "Politiebureau", "police_station");
+        createBuilding(40, 40, 30, 12, 24, 0xd97706, "BMW Autodealer", "dealership");
+        createBuilding(-40, 40, 20, 10, 16, 0x059669, "Tankstation", "gas_station");
+
+        // Woonhuizen
+        const colors = [0xb91c1c, 0x0369a1, 0x4d7c0f, 0x6d28d9, 0xb45309];
+        let cIdx = 0;
+        for (let bx = -140; bx <= 140; bx += 35) {
+            if (Math.abs(bx) < 20) continue;
+            createBuilding(bx, -120, 18, 14, 18, colors[(cIdx++) % colors.length], "Woonhuis", "house");
+            createBuilding(bx, 120, 18, 14, 18, colors[(cIdx++) % colors.length], "Woonhuis", "house");
+        }
+
+        // Bomen
+        for (let x = -160; x <= 160; x += 40) {
+            for (let z = -160; z <= 160; z += 40) {
+                if (Math.abs(x) < 20 || Math.abs(z) < 20) continue;
+                const treeGroup = new THREE.Group();
+                treeGroup.position.set(x + 12, 0, z + 12);
+                
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 4), new THREE.MeshStandardMaterial({ color: 0x5c4033 }));
+                trunk.position.y = 2;
+                treeGroup.add(trunk);
+
+                const leaves = new THREE.Mesh(new THREE.DodecahedronGeometry(3.5), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
+                leaves.position.y = 6;
+                leaves.castShadow = true;
+                treeGroup.add(leaves);
+
+                scene.add(treeGroup);
+            }
+        }
+
+        // --- 3D VEHICLE MESH BUILDER (RIGHT HAND DRIVE - RECHTSGESTUURD) ---
+        function createVehicleMesh(type) {
+            const group = new THREE.Group();
+            
+            let bodyColor = 0x0284c7;
+            let isVan = (type === 'postnl_bus');
+            let isPolice = (type === 'police_bmw');
+
+            if (type === 'bmw_m3') bodyColor = 0xd97706;
+            if (isVan) bodyColor = 0xea580c;
+            if (isPolice) bodyColor = 0x1e293b;
+
+            const bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.3, metalness: 0.5 });
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1, metalness: 0.9 });
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
+
+            if (!isVan) {
+                // BMW Car Body
+                const mainBody = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.2, 8.8), bodyMat);
+                mainBody.position.y = 0.9;
+                mainBody.castShadow = true;
+                group.add(mainBody);
+
+                const cabin = new THREE.Mesh(new THREE.BoxGeometry(3.8, 1.0, 4.4), bodyMat);
+                cabin.position.set(0, 2.0, -0.4);
+                cabin.castShadow = true;
+                group.add(cabin);
+
+                const glass = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.9, 4.2), glassMat);
+                glass.position.set(0, 2.05, -0.4);
+                group.add(glass);
+
+                // RECHTSGESTUURD (Right-Hand Drive Steering Wheel)
+                const stuur = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.35, 0.08, 8, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x111111 })
+                );
+                stuur.position.set(-0.9, 2.0, 0.8); // Geplaatst aan de RECHTERKANT van de cabine
+                stuur.rotation.x = Math.PI / 3;
+                group.add(stuur);
+
+                // Grille
+                const grille = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 0.2), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                grille.position.set(0, 0.9, 4.41);
+                group.add(grille);
+
+            } else {
+                // PostNL Van Body
+                const vanBody = new THREE.Mesh(new THREE.BoxGeometry(4.6, 2.4, 9.6), bodyMat);
+                vanBody.position.y = 1.6;
+                vanBody.castShadow = true;
+                group.add(vanBody);
+
+                // Witte PostNL Strip
+                const stripe = new THREE.Mesh(new THREE.BoxGeometry(4.65, 0.5, 9.65), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+                stripe.position.y = 1.6;
+                group.add(stripe);
+            }
+
+            // Koplampen
+            const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const hl1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 0.2), headLightMat);
+            hl1.position.set(-1.5, 1.0, isVan ? 4.81 : 4.41);
+            const hl2 = hl1.clone();
+            hl2.position.x = 1.5;
+            group.add(hl1);
+            group.add(hl2);
+
+            // Wielen
+            const wheelGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.6, 16);
+            wheelGeo.rotateZ(Math.PI / 2);
+            [[-2.1, 0.8, 2.6], [2.1, 0.8, 2.6], [-2.1, 0.8, -2.6], [2.1, 0.8, -2.6]].forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(...pos);
+                wheel.castShadow = true;
+                group.add(wheel);
+            });
+
+            return group;
+        }
+
+        // --- VEHICLE CONTROLLER ---
+        class VehicleController {
+            constructor(type, x = 0, z = 0) {
+                this.type = type;
+                this.mesh = createVehicleMesh(type);
+                this.mesh.position.set(x, 0, z);
+                scene.add(this.mesh);
+
+                this.speed = 0;
+                this.maxSpeed = type === 'police_bmw' ? 1.4 : (type === 'bmw_m3' ? 1.3 : 1.1);
+                this.acceleration = 0.025;
+                this.friction = 0.96;
+                this.turnSpeed = 0.04;
+                this.angle = 0;
+            }
+
+            update() {
+                // Gas & Rem Pedaal
+                if (controls.gas) {
+                    this.speed += this.acceleration;
+                }
+                if (controls.brake) {
+                    this.speed -= this.acceleration * 0.7;
+                }
+
+                // Sturen via het interactieve Stuurwiel
+                if (Math.abs(this.speed) > 0.01) {
+                    const dir = this.speed > 0 ? 1 : -1;
+                    this.angle -= controls.steeringAngle * this.turnSpeed * dir;
+                }
+
+                // Wrijving & beweging
+                this.speed *= this.friction;
+                this.speed = Math.max(-this.maxSpeed * 0.4, Math.min(this.maxSpeed, this.speed));
+
+                this.mesh.rotation.y = this.angle;
+                this.mesh.position.x += Math.sin(this.angle) * this.speed;
+                this.mesh.position.z += Math.cos(this.angle) * this.speed;
+
+                // Map Grenzen
+                const maxBound = mapSize / 2 - 10;
+                this.mesh.position.x = Math.max(-maxBound, Math.min(maxBound, this.mesh.position.x));
+                this.mesh.position.z = Math.max(-maxBound, Math.min(maxBound, this.mesh.position.z));
+
+                // Speedometer UI & Audio
+                const speedKmH = Math.round(Math.abs(this.speed) * 110);
+                updateAudioSound(Math.abs(this.speed) / this.maxSpeed);
+
+                document.getElementById('speed-val').innerText = speedKmH;
+                document.getElementById('speed-bar').style.width = Math.min(100, (speedKmH / 140) * 100) + '%';
+            }
+
+            destroy() {
+                scene.remove(this.mesh);
+            }
+        }
+
+        gameState.currentVehicle = new VehicleController('bmw_m5', 0, 10);
+
+        // --- INTERACTIEF STUURWIEL BINDING (RECHTS) ---
+        const wheelContainer = document.getElementById('steering-wheel-container');
+        const wheelEl = document.getElementById('steering-wheel');
+        let isDraggingWheel = false;
+        let wheelCenter = { x: 0, y: 0 };
+        let currentWheelRotation = 0; // in graden
+
+        function updateWheelCenter() {
+            const rect = wheelContainer.getBoundingClientRect();
+            wheelCenter.x = rect.left + rect.width / 2;
+            wheelCenter.y = rect.top + rect.height / 2;
+        }
+
+        function handleWheelMove(clientX, clientY) {
+            if (!isDraggingWheel) return;
+            const deltaX = clientX - wheelCenter.x;
+            const deltaY = clientY - wheelCenter.y;
+            
+            // Bereken hoek t.o.v. centrum
+            let angleRad = Math.atan2(deltaY, deltaX);
+            let angleDeg = angleRad * (180 / Math.PI) + 90;
+
+            if (angleDeg > 180) angleDeg -= 360;
+
+            // Klem hoek tussen -120 en +120 graden
+            angleDeg = Math.max(-120, Math.min(120, angleDeg));
+            currentWheelRotation = angleDeg;
+
+            // Visuele rotatie van het stuur
+            wheelEl.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            // Vertaal naar stuurwaarde (-1 tot +1)
+            controls.steeringAngle = currentWheelRotation / 120;
+        }
+
+        function resetWheel() {
+            isDraggingWheel = false;
+            currentWheelRotation = 0;
+            wheelEl.style.transform = `rotate(0deg)`;
+            controls.steeringAngle = 0;
+        }
+
+        // Touch Events voor Stuurwiel
+        wheelContainer.addEventListener('touchstart', (e) => {
+            initAudio();
+            isDraggingWheel = true;
+            updateWheelCenter();
+            const touch = e.touches[0];
+            handleWheelMove(touch.clientX, touch.clientY);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!isDraggingWheel) return;
+            const touch = e.touches[0];
+            handleWheelMove(touch.clientX, touch.clientY);
+        });
+
+        window.addEventListener('touchend', resetWheel);
+
+        // Muis Events voor Stuurwiel (Desktop Testen)
+        wheelContainer.addEventListener('mousedown', (e) => {
+            initAudio();
+            isDraggingWheel = true;
+            updateWheelCenter();
+            handleWheelMove(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDraggingWheel) handleWheelMove(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', resetWheel);
+
+        // Pedalen Binds
+        const bindPedal = (id, controlKey) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); initAudio(); controls[controlKey] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); controls[controlKey] = false; });
+            btn.addEventListener('mousedown', () => { initAudio(); controls[controlKey] = true; });
+            btn.addEventListener('mouseup', () => { controls[controlKey] = false; });
+        };
+        bindPedal('btn-gas', 'gas');
+        bindPedal('btn-brake', 'brake');
+
+        // Toetsenbord Fallback (WASD / Pijltjes)
+        window.addEventListener('keydown', (e) => {
+            initAudio();
+            if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') controls.gas = true;
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') controls.brake = true;
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') controls.steeringAngle = -1;
+            if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') controls.steeringAngle = 1;
+            if (e.key === 'e' || e.key === 'E') handleJobCompletion();
+            if (e.key === 'c' || e.key === 'C') changeCamera();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') controls.gas = false;
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') controls.brake = false;
+            if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft' || e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') controls.steeringAngle = 0;
+        });
+
+        // --- WAYPOINTS & JOBS LOGIC ---
+        let waypointMesh = null;
+
+        function setJobTarget(x, z, label) {
+            if (waypointMesh) scene.remove(waypointMesh);
+
+            const group = new THREE.Group();
+            group.position.set(x, 0.1, z);
+
+            const ring = new THREE.Mesh(new THREE.RingGeometry(2, 3, 32), new THREE.MeshBasicMaterial({ color: 0x00adff, side: THREE.DoubleSide }));
+            ring.rotation.x = -Math.PI / 2;
+            group.add(ring);
+
+            const beam = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 40, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0x00adff, transparent: true, opacity: 0.3 }));
+            beam.position.y = 20;
+            group.add(beam);
+
+            scene.add(group);
+            waypointMesh = group;
+
+            gameState.activeJobTarget = { x, z, label };
+            document.getElementById('notif-title').innerText = "NIEUWE OPDRACHT";
+            document.getElementById('notif-body').innerText = label;
+            document.getElementById('notification-banner').classList.remove('hidden');
+        }
+
+        function clearWaypoint() {
+            if (waypointMesh) scene.remove(waypointMesh);
+            waypointMesh = null;
+            gameState.activeJobTarget = null;
+            document.getElementById('notification-banner').classList.add('hidden');
+        }
+
+        function selectJob(jobType) {
+            gameState.job = jobType;
+            toggleMenu('job-menu');
+            clearWaypoint();
+
+            const badge = document.getElementById('current-job-badge');
+            if (jobType === 'postnl') {
+                badge.innerHTML = `<i class="fa-solid fa-box-open text-orange-400"></i> PostNL Bezorger`;
+                spawnVehicle('postnl_bus');
+                setJobTarget(-40, -30, "Rijd naar het PostNL Sorteercentrum om pakketten op te halen!");
+            } else if (jobType === 'police') {
+                badge.innerHTML = `<i class="fa-solid fa-shield-halved text-blue-400"></i> Politie Agent`;
+                spawnVehicle('police_bmw');
+                setJobTarget(40, -30, "Patrouilleer in Oranjestad of reageer op noodoproepen.");
+            } else if (jobType === 'taxi') {
+                badge.innerHTML = `<i class="fa-solid fa-taxi text-yellow-400"></i> Taxi Chauffeur`;
+                setJobTarget(0, 90, "Pik een passagier op bij het centrum!");
+            } else {
+                badge.innerHTML = `<i class="fa-solid fa-user text-emerald-400"></i> Burger`;
+            }
+        }
+
+        function handleJobCompletion() {
+            if (!gameState.activeJobTarget) return;
+            playChimeSound();
+
+            if (gameState.job === 'postnl') {
+                if (gameState.activeJobTarget.label.includes("Sorteercentrum")) {
+                    setJobTarget(70, 120, "Bezorg het pakketje bij het woonhuis!");
+                } else {
+                    addCash(150);
+                    setJobTarget(-40, -30, "Pakket bezorgd (€150)! Rijd terug naar het depot voor een nieuwe vracht.");
+                }
+            } else if (gameState.job === 'police') {
+                addCash(200);
+                clearWaypoint();
+                setTimeout(() => setJobTarget(-80, 80, "NOODOPROEP: Verdachte auto gespot bij de haven!"), 3000);
+            } else if (gameState.job === 'taxi') {
+                addCash(120);
+                setJobTarget(-100, -50, "Breng de passagier naar het eindpunt!");
+            }
+        }
+
+        function addCash(amount) {
+            gameState.cash += amount;
+            document.getElementById('cash-val').innerText = gameState.cash.toLocaleString();
+        }
+
+        function checkJobProximity() {
+            if (!gameState.currentVehicle || !gameState.activeJobTarget) return;
+            const pos = gameState.currentVehicle.mesh.position;
+            const dist = Math.hypot(pos.x - gameState.activeJobTarget.x, pos.z - gameState.activeJobTarget.z);
+
+            if (dist < 10) {
+                document.getElementById('action-prompt').classList.remove('hidden');
+                document.getElementById('action-text').innerText = gameState.activeJobTarget.label;
+            } else {
+                document.getElementById('action-prompt').classList.add('hidden');
+            }
+        }
+
+        // --- GARAGE & VEHICLE SPAWNER ---
+        function spawnVehicle(type) {
+            if (gameState.currentVehicle) gameState.currentVehicle.destroy();
+            gameState.currentVehicle = new VehicleController(type, 0, 10);
+            toggleMenu('garage-menu', false);
+        }
+
+        function buyOrSpawn(type, price) {
+            if (gameState.ownedCars.includes(type)) {
+                spawnVehicle(type);
+            } else if (gameState.cash >= price) {
+                gameState.cash -= price;
+                document.getElementById('cash-val').innerText = gameState.cash.toLocaleString();
+                gameState.ownedCars.push(type);
+                spawnVehicle(type);
+            } else {
+                alert("Niet genoeg geld voor deze BMW!");
+            }
+        }
+
+        function toggleMenu(menuId, force) {
+            const menu = document.getElementById(menuId);
+            menu.classList.toggle('hidden', force !== undefined ? !force : undefined);
+        }
+
+        function changeCamera() {
+            gameState.cameraMode = (gameState.cameraMode + 1) % 3;
+        }
+
+        function toggleDayNight() {
+            gameState.dayNight = !gameState.dayNight;
+            const icon = document.getElementById('day-night-icon');
+            if (gameState.dayNight) {
+                scene.background.setHex(0x87ceeb);
+                scene.fog.color.setHex(0x87ceeb);
+                ambientLight.intensity = 0.6;
+                sunLight.intensity = 0.9;
+                icon.className = "fa-solid fa-moon text-indigo-400 text-lg";
+            } else {
+                scene.background.setHex(0x0a0e17);
+                scene.fog.color.setHex(0x0a0e17);
+                ambientLight.intensity = 0.15;
+                sunLight.intensity = 0.1;
+                icon.className = "fa-solid fa-sun text-amber-400 text-lg";
+            }
+        }
+
+        // --- MINIMAP RADAR ---
+        const minimapCanvas = document.getElementById('minimap-canvas');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        minimapCanvas.width = 112;
+        minimapCanvas.height = 112;
+
+        function updateMinimap() {
+            if (!gameState.currentVehicle) return;
+            const pos = gameState.currentVehicle.mesh.position;
+
+            minimapCtx.fillStyle = '#111827';
+            minimapCtx.fillRect(0, 0, 112, 112);
+
+            const scale = 0.4;
+            const centerX = 56;
+            const centerY = 56;
+
+            // Gebouwen
+            minimapCtx.fillStyle = '#374151';
+            buildings.forEach(b => {
+                const mapX = centerX + (b.x - pos.x) * scale;
+                const mapY = centerY + (b.z - pos.z) * scale;
+                minimapCtx.fillRect(mapX - (b.w * scale) / 2, mapY - (b.d * scale) / 2, b.w * scale, b.d * scale);
+            });
+
+            // Target Waypoint
+            if (gameState.activeJobTarget) {
+                const wpX = centerX + (gameState.activeJobTarget.x - pos.x) * scale;
+                const wpY = centerY + (gameState.activeJobTarget.z - pos.z) * scale;
+                minimapCtx.fillStyle = '#00adff';
+                minimapCtx.beginPath();
+                minimapCtx.arc(wpX, wpY, 4, 0, Math.PI * 2);
+                minimapCtx.fill();
+            }
+
+            // Player Marker
+            minimapCtx.fillStyle = '#f59e0b';
+            minimapCtx.beginPath();
+            minimapCtx.arc(centerX, centerY, 3.5, 0, Math.PI * 2);
+            minimapCtx.fill();
+        }
+
+        // --- CAMERA UPDATE ---
+        function updateCamera() {
+            if (!gameState.currentVehicle) return;
+            const vehMesh = gameState.currentVehicle.mesh;
+
+            if (gameState.cameraMode === 0) {
+                // 3rd Person
+                const offset = new THREE.Vector3(0, 7, -18);
+                offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), vehMesh.rotation.y);
+                camera.position.lerp(vehMesh.position.clone().add(offset), 0.1);
+                camera.lookAt(vehMesh.position.clone().add(new THREE.Vector3(0, 2, 0)));
+            } else if (gameState.cameraMode === 1) {
+                // RHD Bestuurdersperspectief (Rechts achter het stuur)
+                const offset = new THREE.Vector3(-0.9, 2.1, 0.4);
+                offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), vehMesh.rotation.y);
+                camera.position.copy(vehMesh.position.clone().add(offset));
+                
+                const target = vehMesh.position.clone().add(new THREE.Vector3(-0.9, 1.8, 10).applyAxisAngle(new THREE.Vector3(0, 1, 0), vehMesh.rotation.y));
+                camera.lookAt(target);
+            } else {
+                // Top Down
+                camera.position.set(vehMesh.position.x, 60, vehMesh.position.z);
+                camera.lookAt(vehMesh.position);
+            }
+        }
+
+        // Window Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- GAME LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState.currentVehicle) {
+                gameState.currentVehicle.update();
+            }
+
+            if (waypointMesh) {
+                waypointMesh.rotation.y += 0.02;
+            }
+
+            checkJobProximity();
+            updateCamera();
+            updateMinimap();
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = () => {
+            animate();
+        };
+    </script>
 </body>
 </html>
