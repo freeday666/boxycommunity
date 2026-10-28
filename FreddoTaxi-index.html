@@ -1,63 +1,190 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Freddo Taxi Roleplay</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820;font-family:system-ui,Arial;color:#fff}canvas{display:block}#hud{position:fixed;inset:0;pointer-events:none}.panel{background:#101820d9;border:1px solid #ffffff2b;border-radius:12px;padding:10px 12px;box-shadow:0 5px 20px #0005}.top{position:absolute;top:10px;left:10px;display:flex;gap:8px;align-items:flex-start}.brand{font-weight:900;letter-spacing:.3px;font-size:14px}.small{font-size:12px;color:#c8d4df}.money{font-weight:800;color:#7df5a4}.mission{position:absolute;top:10px;left:50%;transform:translateX(-50%);max-width:min(390px,55vw);text-align:center;font-size:13px}.right{position:absolute;right:10px;top:10px;display:flex;gap:8px;align-items:flex-start}.mapwrap{width:148px;height:148px;padding:5px}.mapwrap canvas{width:136px;height:136px;border-radius:8px}.btn{pointer-events:auto;border:1px solid #ffffff45;background:#172635eF;color:white;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;touch-action:manipulation}.btn:active,.control:active{background:#248b68}.controls{position:absolute;bottom:18px;left:12px;display:grid;grid-template-columns:58px 58px 58px;grid-template-rows:54px 54px;gap:6px;pointer-events:auto}.control{border:1px solid #ffffff55;border-radius:14px;background:#101820b8;color:white;font-size:21px;font-weight:800;touch-action:none;user-select:none}.gas{position:absolute;right:14px;bottom:22px;display:grid;grid-template-columns:74px 74px;gap:8px;pointer-events:auto}.gas .control{height:68px;font-size:13px}.actions{position:absolute;right:14px;bottom:174px;display:flex;flex-direction:column;gap:7px;pointer-events:auto}.status{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:12px;text-align:center;background:#101820bb;padding:6px 10px;border-radius:9px;white-space:nowrap}.modal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#061019b8;pointer-events:auto;padding:18px}.modalcard{max-width:510px;background:#172635;border:1px solid #ffffff30;border-radius:18px;padding:24px;box-shadow:0 20px 60px #0009}.modal h1{margin:0 0 8px;font-size:28px}.modal p{line-height:1.5;color:#d2dce6}.modal .btn{background:#16845e;border:0}.hide{display:none!important}.tag{display:inline-block;border-radius:6px;background:#24465a;padding:3px 7px;font-size:11px;margin:2px}@media(max-width:650px){.mission{top:95px;max-width:70vw}.mapwrap{width:118px;height:118px}.mapwrap canvas{width:106px;height:106px}.brandbox{max-width:155px}.right{gap:4px}.controls{grid-template-columns:52px 52px 52px;grid-template-rows:50px 50px}.gas{grid-template-columns:62px 62px}.gas .control{height:60px}.status{bottom:128px;max-width:80vw;white-space:normal}.actions{bottom:164px}}
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#87b9d8;font-family:Arial,sans-serif;color:white}
+#game{position:fixed;inset:0}
+#hud{position:fixed;top:12px;left:12px;right:12px;pointer-events:none}
+.panel{background:#101820dd;border:1px solid #ffffff33;border-radius:12px;padding:10px;margin-bottom:8px;text-shadow:1px 1px #000}
+#money{font-size:20px;color:#72ff9a;font-weight:bold}
+#message{font-size:14px}
+#map{position:fixed;right:12px;top:12px;width:125px;height:125px;border:2px solid white;border-radius:50%;background:#253b35dd}
+#controls{position:fixed;bottom:18px;left:0;right:0;display:flex;justify-content:space-between;padding:0 18px;align-items:end}
+.group{display:flex;gap:10px;align-items:center}
+button{width:58px;height:58px;border-radius:16px;border:2px solid #ffffff66;background:#14212de8;color:white;font-size:22px;font-weight:bold;touch-action:none}
+button:active{background:#f5c542;color:#111}
+#jobs{position:fixed;left:12px;bottom:155px;display:flex;gap:6px;flex-wrap:wrap;max-width:75%}
+.small{width:auto;height:auto;padding:10px;font-size:13px;border-radius:9px}
+#hint{position:fixed;top:155px;left:12px;font-size:12px;background:#101820cc;padding:8px;border-radius:8px}
 </style>
 </head>
 <body>
+<div id="game"></div>
 <div id="hud">
- <div class="top"><div class="panel brandbox"><div class="brand">🚕 FREDDO TAXI ROLEPLAY</div><div class="small">Dagdienst · Stad Freddo</div><div>Saldo: <span class="money" id="money">€ 250</span></div><div class="small" id="speed">0 km/u · Taxi</div></div></div>
- <div class="panel mission" id="mission">Start je dienst en haal je eerste passagier op.</div>
- <div class="right"><div class="panel mapwrap"><canvas id="map" width="136" height="136"></canvas></div><button class="btn" id="cameraBtn">Camera: cockpit</button></div>
- <div class="controls"><button class="control" data-key="left" style="grid-column:1;grid-row:1">◀</button><button class="control" data-key="up" style="grid-column:2;grid-row:1">▲</button><button class="control" data-key="right" style="grid-column:3;grid-row:1">▶</button><button class="control" data-key="down" style="grid-column:2;grid-row:2">▼</button></div>
- <div class="actions"><button class="btn" id="jobBtn">Start dienst</button><button class="btn" id="pickupBtn">Passagier: ophalen</button><button class="btn" id="exitBtn">In/uit taxi</button></div>
- <div class="gas"><button class="control" data-key="brake">REM<br>◀</button><button class="control" data-key="gas">GAS<br>▶</button></div>
- <div class="status" id="status">Rijd naar de gele blip. Gebruik WASD of de schermknoppen.</div>
- <div class="modal" id="welcome"><div class="modalcard"><h1>🚕 Freddo Taxi Roleplay</h1><p>Welkom in Stad Freddo! Rijd door de 3D-stad, pik passagiers op en breng ze naar hun bestemming om geld te verdienen.</p><p><span class="tag">3D-stad</span><span class="tag">Cockpitcamera</span><span class="tag">Minimap-blips</span><span class="tag">Android-bediening</span></p><p class="small">Dit is een speelbare prototypeversie. De voertuigen zijn originele, generieke modellen; officiële automerken/logo's en online multiplayer zijn niet inbegrepen.</p><button class="btn" id="playBtn">Start met spelen</button></div></div>
+  <div class="panel">
+    <b>🚕 FREDDO TAXI ROLEPLAY</b><br>
+    <span id="money">€ 1.000</span> · <span id="job">Taxi chauffeur</span>
+    <div id="message">Welkom! Rijd naar de gele passagiersmarker.</div>
+  </div>
 </div>
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9bc9e6);scene.fog=new THREE.Fog(0x9bc9e6,95,260);
+<canvas id="map" width="125" height="125"></canvas>
+<div id="hint">🟡 Passagier · 🔴 Bestemming<br>Camera: V · Instappen: E</div>
+<div id="jobs">
+  <button class="small" onclick="changeJob('Taxi chauffeur')">🚕 Taxi</button>
+  <button class="small" onclick="changeJob('Bezorger')">📦 Bezorger</button>
+  <button class="small" onclick="changeJob('Politie')">🚓 Politie</button>
+  <button class="small" onclick="toggleCamera()">🎥 Camera</button>
+</div>
+<div id="controls">
+  <div class="group">
+    <button id="left">◀</button><button id="right">▶</button>
+  </div>
+  <div class="group">
+    <button id="brake">▼</button><button id="gas">▲</button><button id="interact">E</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(() => {
+const root=document.getElementById('game');
+if(!window.THREE){document.getElementById('message').textContent='Geen internet: de 3D-engine kon niet laden.';return}
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x9ac9e7);
+scene.fog=new THREE.Fog(0x9ac9e7,90,260);
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,500);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(renderer.domElement);renderer.domElement.style.position='fixed';renderer.domElement.style.inset='0';renderer.domElement.style.zIndex='0';document.querySelector('#hud').style.zIndex='1';
-scene.add(new THREE.HemisphereLight(0xe6f5ff,0x5c674b,2));const sun=new THREE.DirectionalLight(0xfff1d5,2.5);sun.position.set(-50,90,40);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
-const mat=(color,roughness=.85)=>new THREE.MeshStandardMaterial({color,roughness});const groundMat=mat(0x68856a),roadMat=mat(0x30363d),lineMat=mat(0xe8d99c),glassMat=new THREE.MeshStandardMaterial({color:0x8ac5df,metalness:.15,roughness:.25}),taxiMat=mat(0xf1c928,.48),blackMat=mat(0x20252b,.6),whiteMat=mat(0xe9edf0,.55);
-function box(w,h,d,material,x,y,z,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
-box(500,.5,500,groundMat,0,-.5,0);
-// Road grid
+const renderer=new THREE.WebGLRenderer({antialias:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=false;
+root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xffffff,0x596c54,2));
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(30,60,20);scene.add(sun);
+const mat=(color)=>new THREE.MeshStandardMaterial({color,roughness:.85});
+const grass=mat(0x63875b),road=mat(0x343a40),line=mat(0xf3e6a0);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),grass);
+ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
+const buildings=[];
+function block(x,z,w,d,h,color){
+ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+ b.position.set(x,h/2,z);scene.add(b);buildings.push(b);
+ const windows=mat(0xa9d8e9);
+ for(let y=1.5;y<h-0.5;y+=2.2)for(let xx=-w/2+1;xx<w/2-0.5;xx+=2){
+  const win=new THREE.Mesh(new THREE.BoxGeometry(.65,.85,.06),windows);
+  win.position.set(x+xx,y,z+d/2+.04);scene.add(win);
+ }
+}
 for(let i=-4;i<=4;i++){
- const p=i*28;box(10,.08,250,roadMat,p,.02,0);box(250,.08,10,roadMat,0,.025,p);
- for(let k=-4;k<=4;k++){let q=k*28;box(.13,.025,250,lineMat,p-5.1,.07,0);box(.13,.025,250,lineMat,p+5.1,.07,0);box(250,.025,.13,lineMat,0,.07,p-5.1);box(250,.025,.13,lineMat,0,.07,p+5.1);for(let n=-4;n<=4;n++){let t=n*22;box(.18,.03,3,whiteMat,p,.08,t);box(3,.03,.18,whiteMat,t,.08,p)}}
+ const p=i*32;
+ const r1=new THREE.Mesh(new THREE.BoxGeometry(500,.08,12),road);r1.position.set(0,0,p);scene.add(r1);
+ const r2=new THREE.Mesh(new THREE.BoxGeometry(12,.08,500),road);r2.position.set(p,0,0);scene.add(r2);
+ for(let j=-7;j<=7;j++){
+  const stripe=new THREE.Mesh(new THREE.BoxGeometry(2,.04,.18),line);
+  stripe.position.set(j*4,.06,p);scene.add(stripe);
+ }
 }
-// City blocks and parks
-const buildingMats=[0xb8c3cb,0xd8c3a4,0x9daeb9,0xd6d7d1,0xc6ad9a,0x7c9b9d].map(c=>mat(c));
-for(let gx=-4;gx<=4;gx++)for(let gz=-4;gz<=4;gz++){
- if(Math.random()<.09){const park=mat(0x3e9a59);box(15,.12,15,park,gx*28+14,.05,gz*28+14);for(let t=0;t<5;t++){const x=gx*28+8+Math.random()*12,z=gz*28+8+Math.random()*12;box(.45,2,.45,mat(0x76533b),x,1,z);const crown=new THREE.Mesh(new THREE.ConeGeometry(1.6,3,7),mat(0x2c713e));crown.position.set(x,3.1,z);scene.add(crown)}continue}
- const w=7+Math.random()*8,d=7+Math.random()*8,h=5+Math.random()*25,x=gx*28+14+(Math.random()-.5)*5,z=gz*28+14+(Math.random()-.5)*5;
- const b=box(w,h,d,buildingMats[Math.floor(Math.random()*buildingMats.length)],x,h/2,z); // window strips
- for(let yy=2.2;yy<h-1;yy+=3.2){for(let xx=-w/2+1;xx<w/2-.4;xx+=2){box(.9,.9,.08,glassMat,x+xx,yy,z+d/2+.05);box(.9,.9,.08,glassMat,x+xx,yy,z-d/2-.05)}}
+const colors=[0xc9bba2,0xb4c7d3,0xd1a99b,0xaaa8bf,0xd7d3bb,0x8eafa3];
+for(let x=-4;x<=4;x++)for(let z=-4;z<=4;z++){
+ if(Math.abs(x*32)<20||Math.abs(z*32)<20)continue;
+ block(x*32+(x%2?11:-11),z*32+(z%2?11:-11),12+Math.random()*6,12+Math.random()*6,8+Math.random()*23,colors[Math.floor(Math.random()*colors.length)]);
 }
-// signs / service buildings
-function label(text,x,z,color=0x194d78){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='#'+color.toString(16).padStart(6,'0');ctx.fillRect(0,0,512,128);ctx.fillStyle='white';ctx.font='bold 48px sans-serif';ctx.textAlign='center';ctx.fillText(text,256,82);const tex=new THREE.CanvasTexture(c);const mesh=new THREE.Mesh(new THREE.PlaneGeometry(10,2.5),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));mesh.position.set(x,4,z);mesh.rotation.y=Math.PI;scene.add(mesh)}
-label('TAXI CENTRALE',14,15,0x19764c);label('GARAGE',-14,43,0x255d8c);label('ZIEKENHUIS',42,-14,0x9b3434);label('POLITIE',-42,-14,0x254d91);
-// Generic taxi car model
-const car=new THREE.Group();scene.add(car);car.position.set(0,0,0);box(2.15,.68,4.2,taxiMat,0,.75,0,car);box(1.55,.72,1.85,glassMat,0,1.38,-.15,car);box(1.6,.13,1.5,blackMat,0,1.78,-.15,car);box(1.5,.18,1.2,taxiMat,0,1.87,-.15,car);box(.65,.18,.42,mat(0x1c1c1c),0,2.01,-.15,car);box(.72,.08,.18,mat(0xffffff),-.55,.85,2.1,car);box(.72,.08,.18,mat(0xffffff),.55,.85,2.1,car);box(.65,.1,.15,mat(0xff2222),-.55,.85,-2.1,car);box(.65,.1,.15,mat(0xff2222),.55,.85,-2.1,car);
-const wheels=[];for(const x of [-1.08,1.08])for(const z of [-1.35,1.35]){const wh=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.22,16),blackMat);wh.rotation.z=Math.PI/2;wh.position.set(x,.42,z);wh.castShadow=true;car.add(wh);wheels.push(wh)}
-// Steering wheel visible in cockpit
-const steering=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,8,24),blackMat);steering.position.set(.43,1.22,.52);steering.rotation.y=.18;car.add(steering);const dash=box(1.45,.16,.45,blackMat,0,1.1,.52,car);dash.rotation.x=-.12;
-// Citizens as simple pedestrians
-const people=[];for(let i=0;i<28;i++){let g=new THREE.Group();const shirt=mat([0x2d76a8,0xb94747,0xdaa52b,0x4a8b5a,0x9b70b7][i%5]);box(.45,.9,.3,shirt,0,.85,0,g);const head=new THREE.Mesh(new THREE.SphereGeometry(.23,10,8),mat(0xe0b28b));head.position.y=1.48;g.add(head);g.position.set((Math.floor(Math.random()*8)-4)*28+(Math.random()-.5)*14,0,(Math.floor(Math.random()*8)-4)*28+(Math.random()-.5)*14);scene.add(g);people.push(g)}
-// Jobs and blips
-const jobs=[{name:'Station',x:15,z:15},{name:'Winkelcentrum',x:42,z:42},{name:'Ziekenhuis',x:42,z:-14},{name:'Haven',x:-70,z:70},{name:'Stadhuis',x:-42,z:42},{name:'Hotel',x:70,z:-42}];let jobIndex=0,phase='pickup',money=250,active=false,inCar=true,firstPerson=true,speed=0,heading=0;const marker=new THREE.Group();scene.add(marker);const ring=new THREE.Mesh(new THREE.TorusGeometry(2,.18,8,28),new THREE.MeshBasicMaterial({color:0xffd52a}));ring.rotation.x=Math.PI/2;ring.position.y=.25;marker.add(ring);const beam=new THREE.Mesh(new THREE.CylinderGeometry(.12,.7,5,12,1,true),new THREE.MeshBasicMaterial({color:0xffd52a,transparent:true,opacity:.24,side:THREE.DoubleSide}));beam.position.y=2.7;marker.add(beam);
-const map=document.querySelector('#map'),ctx=map.getContext('2d');function updateMarker(){const j=jobs[jobIndex];marker.position.set(j.x,0,j.z);document.querySelector('#mission').textContent=active?(phase==='pickup'?`Passagier ophalen bij ${j.name}`:`Passagier afzetten bij ${j.name}`):'Start je dienst en haal je eerste passagier op.'}updateMarker();
-function drawMap(){ctx.clearRect(0,0,136,136);ctx.fillStyle='#142a37';ctx.fillRect(0,0,136,136);ctx.strokeStyle='#526572';ctx.lineWidth=4;for(let i=0;i<9;i++){let p=8+i*15;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,136);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(136,p);ctx.stroke()}const mapx=x=>68+x*1.2,mapz=z=>68+z*1.2;ctx.fillStyle='#ffd52a';ctx.beginPath();ctx.arc(mapx(jobs[jobIndex].x),mapz(jobs[jobIndex].z),4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#6ef4a1';ctx.beginPath();ctx.arc(mapx(car.position.x),mapz(car.position.z),4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6ef4a1';ctx.beginPath();ctx.moveTo(mapx(car.position.x),mapz(car.position.z));ctx.lineTo(mapx(car.position.x+Math.sin(heading)*7),mapz(car.position.z+Math.cos(heading)*7));ctx.stroke()}
-const keys={};function setKey(k,v){keys[k]=v}document.querySelectorAll('[data-key]').forEach(b=>{const k=b.dataset.key;b.addEventListener('pointerdown',e=>{e.preventDefault();setKey(k,true);b.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>setKey(k,false))});addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='w'||k==='arrowup')keys.up=true;if(k==='s'||k==='arrowdown')keys.down=true;if(k==='a'||k==='arrowleft')keys.left=true;if(k==='d'||k==='arrowright')keys.right=true;if(k===' ')keys.gas=true});addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(['w','arrowup'].includes(k))keys.up=false;if(['s','arrowdown'].includes(k))keys.down=false;if(['a','arrowleft'].includes(k))keys.left=false;if(['d','arrowright'].includes(k))keys.right=false;if(k===' ')keys.gas=false});
-document.querySelector('#playBtn').onclick=()=>document.querySelector('#welcome').classList.add('hide');document.querySelector('#jobBtn').onclick=()=>{active=!active;document.querySelector('#jobBtn').textContent=active?'Dienst stoppen':'Start dienst';if(!active){phase='pickup';document.querySelector('#status').textContent='Je dienst is gestopt.'}else document.querySelector('#status').textContent='Rijd naar de gele blip.';updateMarker()};document.querySelector('#pickupBtn').onclick=()=>{if(!active){document.querySelector('#status').textContent='Start eerst je taxidienst.';return}const j=jobs[jobIndex],dist=Math.hypot(car.position.x-j.x,car.position.z-j.z);if(dist>12){document.querySelector('#status').textContent='Je bent nog niet dichtbij genoeg bij de blip.';return}if(phase==='pickup'){phase='dropoff';jobIndex=(jobIndex+2)%jobs.length;document.querySelector('#status').textContent='Passagier zit in de taxi. Rijd naar de volgende gele blip!'}else{money+=85;document.querySelector('#money').textContent='€ '+money;phase='pickup';jobIndex=(jobIndex+1)%jobs.length;document.querySelector('#status').textContent='Rit voltooid! Je verdient € 85.'}updateMarker()};document.querySelector('#cameraBtn').onclick=()=>{firstPerson=!firstPerson;document.querySelector('#cameraBtn').textContent='Camera: '+(firstPerson?'cockpit':'derde persoon')};document.querySelector('#exitBtn').onclick=()=>{inCar=!inCar;document.querySelector('#status').textContent=inCar?'Je zit weer in de taxi.':'Je staat naast de taxi (rijden uitgeschakeld).'};
-let last=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.04);last=now;if(inCar){if(keys.up||keys.gas)speed=Math.min(speed+12*dt,24);else if(keys.down||keys.brake)speed=Math.max(speed-18*dt,-7);else speed*=Math.pow(.985,dt*60);if(keys.left)heading+=1.6*dt*(.3+Math.abs(speed)/12);if(keys.right)heading-=1.6*dt*(.3+Math.abs(speed)/12);car.rotation.y=heading;car.position.x+=Math.sin(heading)*speed*dt;car.position.z+=Math.cos(heading)*speed*dt;car.position.x=THREE.MathUtils.clamp(car.position.x,-112,112);car.position.z=THREE.MathUtils.clamp(car.position.z,-112,112);wheels.forEach(w=>w.rotation.x+=speed*dt);steering.rotation.z=(keys.left?-.6:0)+(keys.right?.6:0)}
- if(firstPerson&&inCar){const offset=new THREE.Vector3(.48,1.55,.5).applyAxisAngle(new THREE.Vector3(0,1,0),heading);camera.position.copy(car.position).add(offset);camera.rotation.order='YXZ';camera.rotation.y=heading+Math.PI;camera.rotation.x=-.04}else{const off=new THREE.Vector3(0,5,-10).applyAxisAngle(new THREE.Vector3(0,1,0),heading);const target=car.position.clone().add(off);camera.position.lerp(target,.12);camera.lookAt(car.position.x,car.position.y+1,car.position.z)}
- people.forEach((p,i)=>{p.position.y=0;if(i%4===0){p.position.x+=Math.sin(now*.0003+i)*dt*.4;p.position.z+=Math.cos(now*.00025+i)*dt*.4}});document.querySelector('#speed').textContent=`${Math.round(Math.abs(speed)*3.6)} km/u · ${inCar?'Taxi':'Te voet'}`;drawMap();renderer.render(scene,camera)}requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function car(color){
+ const g=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.BoxGeometry(2,0.7,4),mat(color));body.position.y=.75;g.add(body);
+ const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.55,.7,1.8),mat(0x9bc4d5));cabin.position.set(0,1.35,-.15);g.add(cabin);
+ const black=mat(0x171a1d);
+ for(const x of [-.92,.92])for(const z of [-1.25,1.25]){
+  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,.22,12),black);
+  wheel.rotation.z=Math.PI/2;wheel.position.set(x,.4,z);g.add(wheel);
+ }
+ return g;
+}
+const taxi=car(0xf2c51b);taxi.position.set(0,0,0);scene.add(taxi);
+const npc= new THREE.Group();
+const person=new THREE.Mesh(new THREE.CylinderGeometry(.35,.4,1.5,8),mat(0x2c66ce));person.position.y=.85;npc.add(person);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8),mat(0xe3b18a));head.position.y=1.8;npc.add(head);
+npc.position.set(16,0,-8);scene.add(npc);
+const marker=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,.12,20),mat(0xffdd22));
+marker.position.set(16,.12,-8);scene.add(marker);
+const dest=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,.12,20),mat(0xff4433));
+dest.position.set(-48,.12,32);scene.add(dest);
+let money=1000,speed=0,steer=0,firstPerson=false,hasPassenger=false,delivering=false;
+const keys={left:false,right:false,gas:false,brake:false};
+function bind(id,key){
+ const el=document.getElementById(id);
+ el.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true;el.setPointerCapture(e.pointerId)});
+ for(const ev of ['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,()=>keys[key]=false);
+}
+bind('left','left');bind('right','right');bind('gas','gas');bind('brake','brake');
+function changeJob(j){document.getElementById('job').textContent=j;document.getElementById('message').textContent='Je werkt nu als '+j+'. Rijd veilig door de stad.'}
+window.changeJob=changeJob;
+function toggleCamera(){firstPerson=!firstPerson;document.getElementById('message').textContent=firstPerson?'Cockpitcamera ingeschakeld':'Derdepersoonscamera ingeschakeld'}
+window.toggleCamera=toggleCamera;
+function interact(){
+ if(!hasPassenger&&taxi.position.distanceTo(npc.position)<7){
+  hasPassenger=true;scene.remove(npc);scene.remove(marker);delivering=true;
+  document.getElementById('message').textContent='Passagier ingestapt! Rijd naar de rode bestemming.';
+ }else if(delivering&&taxi.position.distanceTo(dest.position)<8){
+  money+=250;document.getElementById('money').textContent='€ '+money.toLocaleString('nl-NL');
+  delivering=false;hasPassenger=false;dest.position.set(taxi.position.x+60,0,taxi.position.z-45);
+  npc.position.set(taxi.position.x-25,0,taxi.position.z+30);scene.add(npc);marker.position.set(npc.position.x,.12,npc.position.z);scene.add(marker);
+  document.getElementById('message').textContent='Rit voltooid! Je verdient € 250. Nieuwe passagier beschikbaar.';
+ }else document.getElementById('message').textContent='Rijd naar de gele blip en druk op E.';
+}
+document.getElementById('interact').addEventListener('click',interact);
+addEventListener('keydown',e=>{
+ if(e.key==='ArrowLeft'||e.key.toLowerCase()==='a')keys.left=true;
+ if(e.key==='ArrowRight'||e.key.toLowerCase()==='d')keys.right=true;
+ if(e.key==='ArrowUp'||e.key.toLowerCase()==='w')keys.gas=true;
+ if(e.key==='ArrowDown'||e.key.toLowerCase()==='s')keys.brake=true;
+ if(e.key.toLowerCase()==='e')interact();
+ if(e.key.toLowerCase()==='v')toggleCamera();
+});
+addEventListener('keyup',e=>{
+ if(['ArrowLeft','a','A'].includes(e.key))keys.left=false;
+ if(['ArrowRight','d','D'].includes(e.key))keys.right=false;
+ if(['ArrowUp','w','W'].includes(e.key))keys.gas=false;
+ if(['ArrowDown','s','S'].includes(e.key))keys.brake=false;
+});
+const map=document.getElementById('map'),ctx=map.getContext('2d');
+function drawMap(){
+ ctx.clearRect(0,0,125,125);ctx.fillStyle='#263b35';ctx.fillRect(0,0,125,125);
+ ctx.strokeStyle='#626b70';ctx.lineWidth=5;
+ for(let i=-4;i<=4;i++){let p=62.5+i*16;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,125);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(125,p);ctx.stroke()}
+ function dot(pos,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(62.5+(pos.x-taxi.position.x)*1.1,62.5+(pos.z-taxi.position.z)*1.1,4,0,Math.PI*2);ctx.fill()}
+ dot(taxi.position,'#ffffff');if(!hasPassenger)dot(npc.position,'#ffdf25');else dot(dest.position,'#ff453a');
+}
+function animate(){
+ requestAnimationFrame(animate);
+ if(keys.gas)speed=Math.min(speed+.012,.48);else speed*=.985;
+ if(keys.brake)speed=Math.max(speed-.025,-.18);
+ if(keys.left)steer=Math.min(steer+.045,.55);else if(keys.right)steer=Math.max(steer-.045,-.55);else steer*=.85;
+ taxi.rotation.y+=steer*speed*1.7;
+ taxi.position.x+=Math.sin(taxi.rotation.y)*speed;
+ taxi.position.z+=Math.cos(taxi.rotation.y)*speed;
+ taxi.position.x=Math.max(-145,Math.min(145,taxi.position.x));
+ taxi.position.z=Math.max(-145,Math.min(145,taxi.position.z));
+ if(firstPerson){
+  const offset=new THREE.Vector3(0,1.55,-.15).applyAxisAngle(new THREE.Vector3(0,1,0),taxi.rotation.y);
+  camera.position.set(taxi.position.x+offset.x,taxi.position.y+offset.y,taxi.position.z+offset.z);
+  const dir=new THREE.Vector3(Math.sin(taxi.rotation.y),.05,Math.cos(taxi.rotation.y));
+  camera.lookAt(camera.position.clone().add(dir));
+ }else{
+  const offset=new THREE.Vector3(0,5,-9).applyAxisAngle(new THREE.Vector3(0,1,0),taxi.rotation.y);
+  camera.position.lerp(new THREE.Vector3(taxi.position.x+offset.x,offset.y,taxi.position.z+offset.z),.12);
+  camera.lookAt(taxi.position.x,1,taxi.position.z);
+ }
+ marker.rotation.y+=.02;dest.rotation.y-=.02;
+ drawMap();renderer.render(scene,camera);
+}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+animate();
+})();
 </script>
-</body></html>
+</body>
+</html>
